@@ -3,3 +3,4 @@
 Home Energy Monitor
 
 Scrape weather from the web  - feed the AI model to provide sunlight prediction
+Modify usage of key consumers based on the model
