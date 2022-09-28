@@ -7,8 +7,8 @@ def step_impl(context):
 
 
 @when(u'its switched operation')
-def step_impl(context):
-    return(True)
+def step_impl(context) :
+    return(True)   
 
 
 @then(u'the LED lights')
