@@ -1,7 +1,7 @@
 from behave import *
 
 
-@given(u'the device is operation')
+@given(u'the device is in operation')
 def step_impl(context):
     return(True)
 
@@ -12,5 +12,15 @@ def step_impl(context):
 
 
 @then(u'the LED lights')
+def step_impl(context):
+    return(True)
+
+    
+@when(u'its switched off')
+def step_impl(context):
+    return(False)
+
+
+@then(u'the LED turns off')
 def step_impl(context):
     return(True)
