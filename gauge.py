@@ -1,6 +1,5 @@
 import time
 from motor import *
-import bme280
 
 class Gauge:
      __current_val = 0
@@ -37,9 +36,9 @@ class Gauge:
         return(self.__current_val, self.__calibrated)
      
      def Finish(self):
-        self_.m.Finish()
+        self.__m.Finish()
 
-
+'''
 
 l = Gauge("consumer", 0, 6000, 3,4)
 m = Gauge("consumer", 0, 6000, 5,6)
@@ -64,3 +63,5 @@ temperature,pressure,humidity = bme280.readBME280All()
 print ("Temperature : ", temperature, "C")
 print ("Pressure : ", pressure, "hPa")
 print ("Humidity : ", humidity, "%")
+
+'''
