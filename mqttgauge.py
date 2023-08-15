@@ -2,9 +2,6 @@ import time
 import paho.mqtt.client as mqtt
 import gauge
 import argparse
-import gauge
-
-
 
 # Parse command-line arguments for GPIO pins and motor ID
 parser = argparse.ArgumentParser()
@@ -15,7 +12,7 @@ parser.add_argument('--min-gauge', type=int, required=True, help='min value for 
 parser.add_argument('--max-gauge', type=str, required=True, help='max value for gauge position')
 args = parser.parse_args()
 
-// create a gauge instance
+# create a gauge instance
 g = Gauge(motor-id, min-gauge, max-gauge , dir-gpio, step-gpio)
 
 # MQTT settings

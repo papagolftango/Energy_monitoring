@@ -33,7 +33,7 @@ class Gauge:
         self.__calibrated = True
         
      def GetStatus(self):
-        return(self.__current_val, self.__calibrated)
+        return(self.name, self.__current_val, self.__calibrated)
      
      def Finish(self):
         self.__m.Finish()
