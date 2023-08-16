@@ -10,7 +10,8 @@ pytho{
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "args": ["1","2","motortest","0","6000"]
         }
     ]
 }

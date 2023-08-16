@@ -1,7 +1,7 @@
 import time
 from motor import *
 
-class Gauge:
+class gaugeStepper:
      __current_val = 0
      __steps = 0
      __calibrated = False
@@ -38,30 +38,3 @@ class Gauge:
      def Finish(self):
         self.__m.Finish()
 
-'''
-
-l = Gauge("consumer", 0, 6000, 3,4)
-m = Gauge("consumer", 0, 6000, 5,6)
-n = Gauge("consumer", 0, 6000, 7,8)
-o = Gauge("consumer", 0, 6000, 9,10)
-l.Calibrate()
-m.Calibrate()
-n.Calibrate()
-o.Calibrate()
-x,y = l.GetStatus()
-print(x,y)
-l.MoveTo(2400)
-l.MoveTo(2000)
-
- 
-(chip_id, chip_version) = bme280.readBME280ID()
-print ("Chip ID :", chip_id)
-print ("Version :", chip_version)
- 
-temperature,pressure,humidity = bme280.readBME280All()
- 
-print ("Temperature : ", temperature, "C")
-print ("Pressure : ", pressure, "hPa")
-print ("Humidity : ", humidity, "%")
-
-'''
