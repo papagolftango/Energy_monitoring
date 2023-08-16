@@ -1,19 +1,21 @@
 import time
 import paho.mqtt.client as mqtt
-import gauge
 import argparse
+from gauge import gaugeStepper
 
 # Parse command-line arguments for GPIO pins and motor ID
+
 parser = argparse.ArgumentParser()
-parser.add_argument('--step-gpio', type=int, required=True, help='GPIO pin for step signal')
-parser.add_argument('--dir-gpio', type=int, required=True, help='GPIO pin for direction signal')
-parser.add_argument('--motor-id', type=str, required=True, help='Unique motor identifier')
-parser.add_argument('--min-gauge', type=int, required=True, help='min value for gauge position')
-parser.add_argument('--max-gauge', type=str, required=True, help='max value for gauge position')
+parser.add_argument('stepGpio', type= int, help='GPIO pin for step signal')
+parser.add_argument('dirGpio', type=int,  help='GPIO pin for direction signal')
+parser.add_argument('motorID', type=str,  help='Unique motor identifier')
+parser.add_argument('minGauge', type=int,  help='min value for gauge position')
+parser.add_argument('maxGauge', type=int,  help='max value for gauge position')
 args = parser.parse_args()
 
+
 # create a gauge instance
-g = Gauge(motor-id, min-gauge, max-gauge , dir-gpio, step-gpio)
+g = gaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args.stepGpio)
 
 # MQTT settings
 MQTT_BROKER = '192.168.1.32'
@@ -23,6 +25,7 @@ MQTT_TOPIC_TEMPLATE = 'MotorControl/{}/MoveToPosition'  # Topic template with mo
 
 def status(param):
   print( "Status", param) 
+  
 def setup(param):
   print ( "Setup", param)
 
