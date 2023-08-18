@@ -26,7 +26,10 @@ class gaugeStepper:
         delta = position - self.__current_val
         self.__m.Move(delta)   
         self.__current_val = position
-        
+
+     def getpos(self):
+       return(self.__current_val)
+   
      def Calibrate(self):
         self.MoveTo(self.max_val)
         self.MoveTo(self.min_val)
