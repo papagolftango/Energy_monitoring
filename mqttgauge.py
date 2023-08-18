@@ -33,7 +33,7 @@ def setup(param):
   print ( "Setup", param)
   g.Calibrate()
 
-def getpos():
+def getpos(param):
    print ("GetPos", param)
    print(g.getpos())
 
