@@ -71,11 +71,9 @@ try:
     while True:
         pass  # Keep the program running
 except KeyboardInterrupt:
-    pass
-
-# Clean up
-client.disconnect()
-g.Finish()
+    # Clean up
+    client.disconnect()
+    g.Finish()
 
 
 '''
