@@ -20,7 +20,7 @@ g = gaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args
 # MQTT settings
 MQTT_BROKER = '192.168.1.53'
 MQTT_PORT = 1883
-MQTT_TOPIC_TEMPLATE = 'PowerGauge/{}/Control'  # Topic template with motor ID placeholder
+MQTT_TOPIC_TEMPLATE = 'PowerGauge/{}  '  # Topic template with motor ID placeholder
 
 topic = MQTT_TOPIC_TEMPLATE.format(args.motorID)
 print(topic)
@@ -33,8 +33,9 @@ def setup(param):
   print ( "Setup", param)
   g.Calibrate()
 
-def version(param):
-  print ("version", param)
+def getpos():
+   print ("GetPos", param)
+   print(g.getpos())
 
 def move(param):
   print ("Move", param)
@@ -43,7 +44,7 @@ def move(param):
 Cmds = {
         "status" : status,
         "setup" : setup,
-        "version": version,
+        "version": getpos,
         "move" :  move,
       }
 
