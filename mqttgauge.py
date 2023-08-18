@@ -18,28 +18,33 @@ args = parser.parse_args()
 g = gaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args.stepGpio)
 
 # MQTT settings
-MQTT_BROKER = '192.168.1.32'
+MQTT_BROKER = '192.168.1.53'
 MQTT_PORT = 1883
-MQTT_TOPIC_TEMPLATE = 'MotorControl/{}/MoveToPosition'  # Topic template with motor ID placeholder
+MQTT_TOPIC_TEMPLATE = 'PowerGauge/{}/Control'  # Topic template with motor ID placeholder
 
+topic = MQTT_TOPIC_TEMPLATE.format(args.motorID)
+print(topic)
 
 def status(param):
   print( "Status", param) 
+  g.GetStatus()
   
 def setup(param):
   print ( "Setup", param)
+  g.Calibrate()
 
 def version(param):
   print ("version", param)
 
-def message(param):
-  print ("Message", param)
+def move(param):
+  print ("Move", param)
+  g.MoveTo(param)
 
 Cmds = {
         "status" : status,
         "setup" : setup,
         "version": version,
-        "message" :  message,
+        "move" :  move,
       }
 
 def on_message(client, userdata, msg):
@@ -51,17 +56,14 @@ def on_message(client, userdata, msg):
 
 def on_connect(client, userdata, flags, rc):
   print("Connected with result code "+str(rc))
-  client.subscribe("topic/iopi")
-
-
+  client.subscribe(topic)
 
 
 # Connect to MQTT broker and subscribe to topic
 client = mqtt.Client()
 client.on_message = on_message
 client.connect(MQTT_BROKER, MQTT_PORT)
-topic = MQTT_TOPIC_TEMPLATE.format(args.motor_id)
-client.subscribe(topic)
+
 client.loop_start()
 # Main loop (can be replaced with event-driven mechanisms)
 try:
@@ -84,28 +86,29 @@ client.on_message = on_message
 client.loop_forever()
 
 
-l = Gauge("consumer", 0, 6000, 3,4)
-m = Gauge("consumer", 0, 6000, 5,6)
-n = Gauge("consumer", 0, 6000, 7,8)
-o = Gauge("consumer", 0, 6000, 9,10)
+
+l = gaugeStepper("consumer", 0, 6000, 3,4)
+#m = gaugeStepper("consumer", 0, 6000, 5,6)
+#n = gaugeStepper("consumer", 0, 6000, 7,8)
+#o = gaugeStepper("consumer", 0, 6000, 9,10)
 l.Calibrate()
-m.Calibrate()
-n.Calibrate()
-o.Calibrate()
-x,y = l.GetStatus()
+#m.Calibrate()
+#n.Calibrate()
+#o.Calibrate()
+x,y,z = l.GetStatus()
 print(x,y)
 l.MoveTo(2400)
 l.MoveTo(2000)
 
  
-(chip_id, chip_version) = bme280.readBME280ID()
-print ("Chip ID :", chip_id)
-print ("Version :", chip_version)
+#(chip_id, chip_version) = bme280.readBME280ID()
+#print ("Chip ID :", chip_id)
+#print ("Version :", chip_version)
  
-temperature,pressure,humidity = bme280.readBME280All()
+#temperature,pressure,humidity = bme280.readBME280All()
  
-print ("Temperature : ", temperature, "C")
-print ("Pressure : ", pressure, "hPa")
-print ("Humidity : ", humidity, "%")
+#print ("Temperature : ", temperature, "C")
+#print ("Pressure : ", pressure, "hPa")
+#print ("Humidity : ", humidity, "%")
 
 '''
