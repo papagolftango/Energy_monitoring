@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 
 # create a gauge instance
-g = gaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args.stepGpio)
+## g = gaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args.stepGpio)
 
 # MQTT settings
 MQTT_BROKER = '192.168.1.53'
@@ -27,19 +27,19 @@ print(topic)
 
 def status(param):
   print( "Status", param) 
-  g.GetStatus()
+ # g.GetStatus()
   
 def setup(param):
   print ( "Setup", param)
-  g.Calibrate()
+ # g.Calibrate()
 
 def getpos(param):
    print ("GetPos", param)
-   print(g.getpos())
+ #  print(g.getpos())
 
 def move(param):
   print ("Move", param)
-  g.MoveTo(param)
+ # g.MoveTo(param)
 
 Cmds = {
         "status" : status,
@@ -49,10 +49,12 @@ Cmds = {
       }
 
 def on_message(client, userdata, msg):
-    p,s = msg.payload.decode().split(",")
-    print("p " + p)
-    print("s " + s)
-    Cmds[p](s)
+    print("msg")
+    #p,s = msg.payload.decode().split(",")
+   # print("p " + p)
+   # print("s " + s)
+   # Cmds[p](s)
+    print(msg.topic, msg.payload)
 
 
 def on_connect(client, userdata, flags, rc):
@@ -73,7 +75,7 @@ try:
 except KeyboardInterrupt:
     # Clean up
     client.disconnect()
-    g.Finish()
+#    g.Finish()
 
 
 '''
