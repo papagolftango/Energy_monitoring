@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 
 # create a gauge instance
-## g = gaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args.stepGpio)
+g = gaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args.stepGpio)
 
 # MQTT settings
 MQTT_BROKER = '192.168.1.53'
@@ -63,20 +63,20 @@ def on_connect(client, userdata, flags, rc):
 
 
 # Connect to MQTT broker and subscribe to topic
-client = mqtt.Client()
-client.on_message = on_message
-client.connect(MQTT_BROKER, MQTT_PORT)
+#client = mqtt.Client()
+#client.on_message = on_message
+#client.connect(MQTT_BROKER, MQTT_PORT)
 
-client.loop_start()
+#client.loop_start()
 # Main loop (can be replaced with event-driven mechanisms)
-try:
+'''try:
     while True:
         pass  # Keep the program running
 except KeyboardInterrupt:
     # Clean up
     client.disconnect()
 #    g.Finish()
-
+'''
 
 '''
 client = mqtt.Client()
@@ -85,7 +85,7 @@ client.connect("192.168.1.32",1883,60)
 client.on_connect = on_connect
 client.on_message = on_message
 client.loop_forever()
-
+'''
 
 
 l = gaugeStepper("consumer", 0, 6000, 3,4)
@@ -97,11 +97,15 @@ l.Calibrate()
 #n.Calibrate()
 #o.Calibrate()
 x,y,z = l.GetStatus()
-print(x,y)
+print(x,y,z)
 l.MoveTo(2400)
+print(".....................................................................................")
+x,y,z = l.GetStatus()
+print(x,y,z)
+print(l.GetPos())
 l.MoveTo(2000)
 
- 
+'''
 #(chip_id, chip_version) = bme280.readBME280ID()
 #print ("Chip ID :", chip_id)
 #print ("Version :", chip_version)
