@@ -33,7 +33,7 @@ class motor :
     x,y = divmod(p,256)
     d = (pos > 0)
     self.pi1.write(self.direction, d)  
-    print(p,d,x,y)
+  #  print(p,d,x,y)
     self.pi1.wave_chain([
      255, 0,                       # loop start
         self.wid,     # transmit waves 0+0+0
