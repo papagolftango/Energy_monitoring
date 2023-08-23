@@ -1,5 +1,6 @@
 import time
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as paho
+from paho import mqtt
 import argparse
 from gauge import gaugeStepper
 
@@ -23,11 +24,10 @@ MQTT_PORT = 1883
 MQTT_TOPIC_TEMPLATE = 'PowerGauge/{}  '  # Topic template with motor ID placeholder
 
 topic = MQTT_TOPIC_TEMPLATE.format(args.motorID)
-print(topic)
 
 def status(param):
   print( "Status", param) 
-  g.GetStatus()
+  print(g.GetStatus())
   
 def setup(param):
   print ( "Setup", param)
@@ -38,8 +38,8 @@ def getpos(param):
    print(g.getpos())
 
 def move(param):
-  print ("Move", param)
-  g.MoveTo(param)
+  print ("Move", int(param))
+  g.MoveTo(int(param))
 
 Cmds = {
         "status" : status,
@@ -49,24 +49,55 @@ Cmds = {
       }
 
 def on_message(client, userdata, msg):
-    print("msg")
+    print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
     p,s = msg.payload.decode().split(",")
-    print("p " + p)
-    print("s " + s)
     Cmds[p](s)
-    print(msg.topic, msg.payload)
+  
 
+def on_connect(client, userdata, flags, rc, properties=None):
+    print("CONNACK received with code %s." % rc)
+
+# with this callback you can see if your publish was successful
+def on_publish(client, userdata, mid, properties=None):
+    print("mid: " + str(mid))
+
+# print which topic was subscribed to
+def on_subscribe(client, userdata, mid, granted_qos, properties=None):
+    print("Subscribed: " + str(mid) + " " + str(granted_qos))
+
+#client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5)
+client = mqtt.Client()
+
+client.on_connect = on_connect
+client.on_subscribe = on_subscribe
+client.on_message = on_message
+client.on_publish = on_publish
+
+# enable TLS for secure connection
+#client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
+# set username and password
+#client.username_pw_set("paul@thetindalls.co.uk", "T1nd4ll36")
+# connect to HiveMQ Cloud on port 8883 (default for MQTT)
+#client.connect("8c86aacfce7d4aa8881cea67188295ab.s2.eu.hivemq.cloud", 8883)
 
 # Connect to MQTT broker and subscribe to topic
-client = mqtt.Client()
-client.on_message = on_message
+
 client.connect(MQTT_BROKER, MQTT_PORT)
+client.subscribe(topic, qos=1)
+
+# a single publish, this can also be done in loops, etc.
+client.publish(topic, payload="setup, ", qos=1)
+client.publish(topic, payload="status, ", qos=1)
+# loop_forever for simplicity, here you need to stop the loop manually
+# you can also use loop_start and loop_stop
+#client.loop_forever()
 
 client.loop_start()
 # Main loop (can be replaced with event-driven mechanisms)
 try:
     while True:
         time.sleep(1)
+        client.publish(topic, payload="move, -42", qos=1)
 except KeyboardInterrupt:
     pass
 
