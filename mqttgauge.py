@@ -27,19 +27,19 @@ print(topic)
 
 def status(param):
   print( "Status", param) 
- # g.GetStatus()
+  g.GetStatus()
   
 def setup(param):
   print ( "Setup", param)
- # g.Calibrate()
+  g.Calibrate()
 
 def getpos(param):
    print ("GetPos", param)
- #  print(g.getpos())
+   print(g.getpos())
 
 def move(param):
   print ("Move", param)
- # g.MoveTo(param)
+  g.MoveTo(param)
 
 Cmds = {
         "status" : status,
@@ -50,33 +50,30 @@ Cmds = {
 
 def on_message(client, userdata, msg):
     print("msg")
-    #p,s = msg.payload.decode().split(",")
-   # print("p " + p)
-   # print("s " + s)
-   # Cmds[p](s)
+    p,s = msg.payload.decode().split(",")
+    print("p " + p)
+    print("s " + s)
+    Cmds[p](s)
     print(msg.topic, msg.payload)
 
 
-def on_connect(client, userdata, flags, rc):
-  print("Connected with result code "+str(rc))
-  client.subscribe(topic)
-
-
 # Connect to MQTT broker and subscribe to topic
-#client = mqtt.Client()
-#client.on_message = on_message
-#client.connect(MQTT_BROKER, MQTT_PORT)
+client = mqtt.Client()
+client.on_message = on_message
+client.connect(MQTT_BROKER, MQTT_PORT)
 
-#client.loop_start()
+client.loop_start()
 # Main loop (can be replaced with event-driven mechanisms)
-'''try:
+try:
     while True:
-        pass  # Keep the program running
+        time.sleep(1)
 except KeyboardInterrupt:
-    # Clean up
-    client.disconnect()
-#    g.Finish()
-'''
+    pass
+
+
+client.disconnect()
+g.Finish()
+
 
 '''
 client = mqtt.Client()
@@ -88,7 +85,7 @@ client.loop_forever()
 '''
 
 
-l = gaugeStepper("consumer", -600, 600, 3,4)
+l = gaugeStepper("consumer", -600, 600, 3,4) 
 #m = gaugeStepper("power", 0, 6000, 5,6)
 #n = gaugeStepper("temp", 0, 6000, 7,8)
 #o = gaugeStepper("humidity", 0, 6000, 9,10)
