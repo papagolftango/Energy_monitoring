@@ -29,6 +29,7 @@ class motor :
     # pi1.wave_send_once(wid)
   
   def Move(self, pos):
+    print("motor move", pos)
     p = abs(pos)
     x,y = divmod(p,256)
     d = (pos > 0)

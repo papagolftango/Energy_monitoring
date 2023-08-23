@@ -37,13 +37,20 @@ class gaugeStepper:
      def Calibrate(self):
         self.__m.Move(self.__maxStep)
         self.__m.Move(0)
+        self.__current_val =self.min_val
         self.__scale = (self.__maxStep - 0)/(self.max_val - self.min_val)
         self.__calibrated = True
+        print(self.__scale)
         
      def GetStatus(self):
         return(self.name, self.__current_val, self.__calibrated)
      
      def Finish(self):
         self.__m.Finish()
-
-
+'''
+l = gaugeStepper("consumer", -1000, 00, 3,4) 
+l.Calibrate()
+l.MoveTo(0)
+l.MoveTo(-1000)
+l.MoveTo(-250)
+'''
