@@ -76,7 +76,7 @@ client.on_publish = on_publish
 # enable TLS for secure connection
 #client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
 # set username and password
-#client.username_pw_set("paul@thetindalls.co.uk", "T1nd4ll36")
+#client.username_pw_set("paul@thetindalls.co.uk", "")
 # connect to HiveMQ Cloud on port 8883 (default for MQTT)
 #client.connect("8c86aacfce7d4aa8881cea67188295ab.s2.eu.hivemq.cloud", 8883)
 
@@ -114,7 +114,7 @@ client.on_connect = on_connect
 client.on_message = on_message
 client.loop_forever()
 '''
-
+'''
 
 l = gaugeStepper("consumer", -600, 600, 3,4) 
 #m = gaugeStepper("power", 0, 6000, 5,6)
@@ -132,7 +132,7 @@ l.MoveTo(0)
 #print(x,y,z)
 #print(l.GetPos())
 #l.MoveTo(2000)
-
+'''
 '''
 #(chip_id, chip_version) = bme280.readBME280ID()
 #print ("Chip ID :", chip_id)

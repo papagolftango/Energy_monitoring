@@ -37,7 +37,7 @@ class gaugeStepper:
      def Calibrate(self):
         self.__m.Move(self.__maxStep)
         self.__m.Move(0)
-        self.__current_val =self.min_val
+        self.__current_val = self.min_val
         self.__scale = (self.__maxStep - 0)/(self.max_val - self.min_val)
         self.__calibrated = True
         print(self.__scale)
@@ -54,3 +54,19 @@ l.MoveTo(0)
 l.MoveTo(-1000)
 l.MoveTo(-250)
 '''
+motor_thread = MotorControlThread()
+motor_thread.start()
+
+# In other parts of your code:
+motor_thread.queue.put(("calibrate", 1, {}))  # Calibrate motor 1
+motor_thread.queue.put(("calibrate", 2, {}))  # Calibrate motor 2
+
+# Move motor 1 to a specific position with parameters
+move_params_motor1 = {"target_position": 100, "speed": 50}
+motor_thread.queue.put(("move", 1, move_params_motor1))
+
+# Move motor 2 to a specific position with parameters
+move_params_motor2 = {"target_position": 200, "speed": 70}
+motor_thread.queue.put(("move", 2, move_params_motor2))
+
+# Don't forget to properly handle thread cleanup when your application exits.
