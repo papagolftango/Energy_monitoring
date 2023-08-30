@@ -3,27 +3,27 @@ import paho.mqtt.client as paho
 from paho import mqtt
 import argparse
 from gauge import gaugeStepper
+from motor import Motor
 
 # Parse command-line arguments for GPIO pins and motor ID
 
 parser = argparse.ArgumentParser()
-parser.add_argument('stepGpio', type= int, help='GPIO pin for step signal')
-parser.add_argument('dirGpio', type=int,  help='GPIO pin for direction signal')
-parser.add_argument('motorID', type=str,  help='Unique motor identifier')
+parser.add_argument('motorName', type=str,  help='Unique motor identifier')
 parser.add_argument('minGauge', type=int,  help='min value for gauge position')
 parser.add_argument('maxGauge', type=int,  help='max value for gauge position')
+parser.add_argument('motorID', type=int,  help='motor ID 0,1,2,3')
 args = parser.parse_args()
 
-
+m = Motor()
 # create a gauge instance
-g = gaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args.stepGpio)
+g = gaugeStepper(args.motorName, args.minGauge, args.maxGauge , args.motorID, m)
 
 # MQTT settings
 MQTT_BROKER = '192.168.1.53'
 MQTT_PORT = 1883
 MQTT_TOPIC_TEMPLATE = 'PowerGauge/{}  '  # Topic template with motor ID placeholder
 
-topic = MQTT_TOPIC_TEMPLATE.format(args.motorID)
+topic = MQTT_TOPIC_TEMPLATE.format(args.motorName)
 
 def status(param):
   print( "Status", param) 
@@ -114,9 +114,9 @@ client.on_connect = on_connect
 client.on_message = on_message
 client.loop_forever()
 '''
-'''
 
-l = gaugeStepper("consumer", -600, 600, 3,4) 
+
+l = gaugeStepper("consumer", -600, 600, 0) 
 #m = gaugeStepper("power", 0, 6000, 5,6)
 #n = gaugeStepper("temp", 0, 6000, 7,8)
 #o = gaugeStepper("humidity", 0, 6000, 9,10)
@@ -132,7 +132,7 @@ l.MoveTo(0)
 #print(x,y,z)
 #print(l.GetPos())
 #l.MoveTo(2000)
-'''
+
 '''
 #(chip_id, chip_version) = bme280.readBME280ID()
 #print ("Chip ID :", chip_id)
