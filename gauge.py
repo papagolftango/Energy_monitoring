@@ -36,8 +36,8 @@ class gaugeStepper:
        return(self.__current_val)
    
      def Calibrate(self):
-        self.__m.Move(self.id, self.__maxStep)
-        self.__m.Move(self.id, 0)
+        self.__m.move(self.id, self.__maxStep)
+        self.__m.move(self.id, 0)
         self.__current_val = self.min_val
         self.__scale = (self.__maxStep - 0)/(self.max_val - self.min_val)
         self.__calibrated = True

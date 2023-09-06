@@ -1,62 +1,93 @@
 import time
-import paho.mqtt.client as paho
-from paho import mqtt
-import argparse
+#import paho.mqtt.client as paho
+from mqtt import mqtt
 from gauge import gaugeStepper
 from motor import Motor
 
-# Parse command-line arguments for GPIO pins and motor ID
+# Simulated MQTT message payload
+sample_message = {
+    "topic": "PowerGauge/Power",
+    "payload": 
+        "setup",
+    "qos": 0,
+    "retain": False
+}
 
-parser = argparse.ArgumentParser()
-parser.add_argument('motorName', type=str,  help='Unique motor identifier')
-parser.add_argument('minGauge', type=int,  help='min value for gauge position')
-parser.add_argument('maxGauge', type=int,  help='max value for gauge position')
-parser.add_argument('motorID', type=int,  help='motor ID 0,1,2,3')
-args = parser.parse_args()
 
+gauges = [
+            {"name": "Power",    "min" : 0, "max": 6000, "instance" : None},
+            {"name": "Solar",    "min" : 0, "max": 6000, "instance" : None}, 
+            {"name": "MaxPower", "min" : 0, "max": 6000, "instance" : None},
+            {"name": "Export",   "min" : 0, "max": 6000, "instance" : None}
+         ]
+# create a motor instance
 m = Motor()
-# create a gauge instance
-g = gaugeStepper(args.motorName, args.minGauge, args.maxGauge , args.motorID, m)
+gauges[0]["instance"] = gaugeStepper(gauges[0]["name"], gauges[0]["min"], gauges[0]["max"], 0, m)
+gauges[1]["instance"] = gaugeStepper(gauges[1]["name"], gauges[1]["min"], gauges[1]["max"], 1, m)
+gauges[2]["instance"] = gaugeStepper(gauges[2]["name"], gauges[2]["min"], gauges[2]["max"], 2, m)
+gauges[3]["instance"] = gaugeStepper(gauges[3]["name"], gauges[3]["min"], gauges[3]["max"], 3, m)
 
 # MQTT settings
 MQTT_BROKER = '192.168.1.53'
 MQTT_PORT = 1883
-MQTT_TOPIC_TEMPLATE = 'PowerGauge/{}  '  # Topic template with motor ID placeholder
+MQTT_TOPIC_TEMPLATE = 'PowerGauge'  # Topic template with motor ID placeholder
 
-topic = MQTT_TOPIC_TEMPLATE.format(args.motorName)
-
-def status(param):
-  print( "Status", param) 
-  print(g.GetStatus())
+def status(m):
+  print( "Status") 
+  print(m.GetStatus())
   
-def setup(param):
-  print ( "Setup", param)
-  g.Calibrate()
+def setup(m):
+  print ( "Setup")
+  m.Calibrate()
 
-def getpos(param):
-   print ("GetPos", param)
-   print(g.getpos())
+def getpos( m):
+   print ("GetPos")
+   print(m.GetPos())
 
-def move(param):
-  print ("Move", int(param))
-  g.MoveTo(int(param))
+def move(param, m):
+   print ("Move", int(param),m)
+   m.MoveTo(int(param))
+
+def find_motor_by_name(name_to_find, motor_list):
+  for motor in motor_list:
+    if motor.get("name") == name_to_find:
+      return motor
+  return None
 
 Cmds = {
         "status" : status,
         "setup" : setup,
-        "version": getpos,
+        "getpos": getpos,
         "move" :  move,
       }
 
 def on_message(client, userdata, msg):
-    print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
-    p,s = msg.payload.decode().split(",")
-    Cmds[p](s)
-  
+    print(msg)
+    topic_parts = msg['topic'].split('/')
+    if len(topic_parts) == 2 and topic_parts[0] == MQTT_TOPIC_TEMPLATE:
+       motor_name = topic_parts[1]
+       # Perform the reverse lookup to get the motor instance
+       motor_instance = find_motor_by_name(motor_name, gauges)
+       if motor_instance is not None:
+         parts = msg["payload"].split(" ")
+         if len(parts) >= 2:
+            Cmds[parts[0]](parts[1], motor_instance['instance'])
+         else:
+        # Handle the case where there's only one item
+            Cmds[parts[0]](motor_instance['instance'])
+       else:
+         print(f"No motor instance found for '{motor_name}'")
+    else:
+        print("Invalid MQTT topic format")
+        
 
 def on_connect(client, userdata, flags, rc, properties=None):
     print("CONNACK received with code %s." % rc)
-
+    client.subscribe(MQTT_TOPIC_TEMPLATE.format(gauges[0]["name"]))    
+    client.subscribe(MQTT_TOPIC_TEMPLATE.format(gauges[1]["name"]))    
+    client.subscribe(MQTT_TOPIC_TEMPLATE.format(gauges[2]["name"]))
+    client.subscribe(MQTT_TOPIC_TEMPLATE.format(gauges[3]["name"]))
+    
 # with this callback you can see if your publish was successful
 def on_publish(client, userdata, mid, properties=None):
     print("mid: " + str(mid))
@@ -66,7 +97,8 @@ def on_subscribe(client, userdata, mid, granted_qos, properties=None):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 #client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5)
-client = mqtt.Client()
+c = mqtt()
+client = mqtt.Client(c)
 
 client.on_connect = on_connect
 client.on_subscribe = on_subscribe
@@ -83,11 +115,10 @@ client.on_publish = on_publish
 # Connect to MQTT broker and subscribe to topic
 
 client.connect(MQTT_BROKER, MQTT_PORT)
-client.subscribe(topic, qos=1)
 
 # a single publish, this can also be done in loops, etc.
-client.publish(topic, payload="setup, ", qos=1)
-client.publish(topic, payload="status, ", qos=1)
+#client.publish(topic, payload="setup, ", qos=1)
+#client.publish(topic, payload="status, ", qos=1)
 # loop_forever for simplicity, here you need to stop the loop manually
 # you can also use loop_start and loop_stop
 #client.loop_forever()
@@ -96,26 +127,26 @@ client.loop_start()
 # Main loop (can be replaced with event-driven mechanisms)
 try:
     while True:
-        time.sleep(1)
-        client.publish(topic, payload="move, -42", qos=1)
+        time.sleep(3)
+        client.publish('PowerGauge/Power', "move -42")
+        on_message(client, 'P', sample_message)
 except KeyboardInterrupt:
     pass
 
-
 client.disconnect()
-g.Finish()
+m.Finish()
 
 
 '''
 client = mqtt.Client()
 client.connect("192.168.1.32",1883,60)
 
-client.on_connect = on_connect
+client._connect = on_connect
 client.on_message = on_message
 client.loop_forever()
 '''
 
-
+'''
 l = gaugeStepper("consumer", -600, 600, 0) 
 #m = gaugeStepper("power", 0, 6000, 5,6)
 #n = gaugeStepper("temp", 0, 6000, 7,8)
@@ -133,6 +164,7 @@ l.MoveTo(0)
 #print(l.GetPos())
 #l.MoveTo(2000)
 
+'''
 '''
 #(chip_id, chip_version) = bme280.readBME280ID()
 #print ("Chip ID :", chip_id)
