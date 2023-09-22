@@ -43,7 +43,6 @@ class Motor:
         else:
             self.pi.write(self.motors[motor_id]["dir_pin"], 1)
 
-
         num_loops = abs(steps // 256)
         remaining_steps = abs(steps % 256)
         self.pi.wave_chain([

@@ -7,12 +7,16 @@ from motor import Motor
 # Simulated MQTT message payload
 sample_message = {
     "topic": "PowerGauge/Power",
-    "payload": 
-        "setup",
+    "payload": "status",
     "qos": 0,
     "retain": False
 }
-
+sample_message1 = {
+    "topic": "PowerGauge/Power",
+    "payload": "move 1000",
+    "qos": 1000,
+    "retain": False
+}
 
 gauges = [
             {"name": "Power",    "min" : 0, "max": 6000, "instance" : None},
@@ -20,6 +24,7 @@ gauges = [
             {"name": "MaxPower", "min" : 0, "max": 6000, "instance" : None},
             {"name": "Export",   "min" : 0, "max": 6000, "instance" : None}
          ]
+
 # create a motor instance
 m = Motor()
 gauges[0]["instance"] = gaugeStepper(gauges[0]["name"], gauges[0]["min"], gauges[0]["max"], 0, m)
@@ -34,19 +39,22 @@ MQTT_TOPIC_TEMPLATE = 'PowerGauge'  # Topic template with motor ID placeholder
 
 def status(m):
   print( "Status") 
-  print(m.GetStatus())
+  client.publish('PowerGauge/'+ m["name"]+'/response/status', m['instance'].GetStatus())
   
 def setup(m):
   print ( "Setup")
-  m.Calibrate()
+  m['instance'].Calibrate()
+  status(m)
 
-def getpos( m):
+def getpos(m):
    print ("GetPos")
-   print(m.GetPos())
+   client.publish('PowerGauge/'+ m["name"]+'/response/position', m['instance'].GetPos())
 
 def move(param, m):
+   # add check for no paramter
    print ("Move", int(param),m)
-   m.MoveTo(int(param))
+   m['instance'].MoveTo(int(param))
+   status(m) 
 
 def find_motor_by_name(name_to_find, motor_list):
   for motor in motor_list:
@@ -71,10 +79,12 @@ def on_message(client, userdata, msg):
        if motor_instance is not None:
          parts = msg["payload"].split(" ")
          if len(parts) >= 2:
-            Cmds[parts[0]](parts[1], motor_instance['instance'])
-         else:
+            Cmds[parts[0]](parts[1], motor_instance)
+         elif len(parts) == 1:
         # Handle the case where there's only one item
-            Cmds[parts[0]](motor_instance['instance'])
+            Cmds[parts[0]](motor_instance)
+         else:
+           pass
        else:
          print(f"No motor instance found for '{motor_name}'")
     else:
@@ -128,8 +138,9 @@ client.loop_start()
 try:
     while True:
         time.sleep(3)
-        client.publish('PowerGauge/Power', "move -42")
-        on_message(client, 'P', sample_message)
+     #   client.publish('PowerGauge/Power', "move -42")
+        on_message(client, 'PowerGauge', sample_message)
+        on_message(client, 'PowerGauge', sample_message1)
 except KeyboardInterrupt:
     pass
 
