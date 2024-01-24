@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["1","2","motortest","0","6000"]
+            "args": ["motortest","-40","100","0"]
         }
     ]
 }

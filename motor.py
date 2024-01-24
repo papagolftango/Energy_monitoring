@@ -1,56 +1,65 @@
 import time 
 from pigpio import *
 
-class motor :
-  RESET = 26
-  onTime = 400
-  offTime = 600
-  wid=0
-  pi1=0
-  clk =0
-  diection=0
-  wf=[]
+class Motor:
+    RESET = 26
 
-  def __init__(self, Clk, Direction) :  
-    self.clk = Clk
-    self.direction = Direction
-    self.pi1 = pigpio()
-    self.pi1.set_mode(self.clk, pigpio.OUTPUT)
-    self.pi1.set_mode(self.direction, pigpio.OUTPUT)
-    self.pi1.set_mode(self.RESET, pigpio.OUTPUT)
-    self.pi1.write(self.direction, 1)  
- 
-    self.wf.append(pigpio.pulse(gpio_on=(1<<self.clk), gpio_off=0, delay=self.onTime))     # get required timings
-    self.wf.append(pigpio.pulse(gpio_on=0, gpio_off=(1<<self.clk), delay=self.offTime))
+    def __init__(self):
+        self.wid = [0]*4
+        self.pi = pigpio()
+        self.motors = [
+            {"step_pin": 17, "dir_pin": 23, "wid" : self.wid[0]},
+            {"step_pin": 18, "dir_pin": 24, "wid": self.wid[1]},
+            {"step_pin": 27, "dir_pin": 2, "wid" : self.wid[2]},
+            {"step_pin": 22, "dir_pin": 5, "wid" : self.wid[3]}
+        ]
 
-    self.pi1.wave_clear()
-    self.pi1.wave_add_generic(self.wf)
-    self.wid = self.pi1.wave_create()
-    # pi1.wave_send_once(wid)
-  
-  def Move(self, pos):
-    p = abs(pos)
-    x,y = divmod(p,256)
-    d = (pos > 0)
-    self.pi1.write(self.direction, d)  
-    print(p,d,x,y)
-    self.pi1.wave_chain([
-     255, 0,                       # loop start
-        self.wid,     # transmit waves 0+0+0
-     255, 1, y, x,                 # loop end (repeat 5 times)
-     ])
-    while self.pi1.wave_tx_busy():
-       time.sleep(0.01);    # add loop until done
+        for motor in self.motors:
+            self.pi.set_mode(motor["step_pin"], pigpio.OUTPUT)
+            self.pi.set_mode(motor["dir_pin"], pigpio.OUTPUT)
+            self.pi.write(motor["step_pin"], 0)  # Set initial state to low
+            self.pi.write(motor["dir_pin"], 0)   # Set initial direction to forward
+
+        self.pi.set_mode(self.RESET, pigpio.OUTPUT)
+        self.pi.write(self.RESET, 1)  
+        self.pi.write(self.RESET, 0) 
+        time.sleep(0.01)    
+        self.pi.write(self.RESET, 1)
+        
+        self.setup_waveforms()
+        
+    def setup_waveforms(self):
+        for motor in self.motors:
+            waveform = self.pi.wave_add_generic([
+                pigpio.pulse(1 << motor["step_pin"], 0, 1000),  # Step on for 1000 microseconds
+                pigpio.pulse(0, 1 << motor["step_pin"], 1000)   # Step off for 1000 microseconds
+            ])
+           # self.waveforms[motor] = waveform
+            motor["wid"] = self.pi.wave_create();
+    
+    def move(self, motor_id, steps):
+        if steps >= 0:
+            self.pi.write(self.motors[motor_id]["dir_pin"], 0)  # Set direction pin low for forward
+        else:
+            self.pi.write(self.motors[motor_id]["dir_pin"], 1)
+
+        num_loops = abs(steps // 256)
+        remaining_steps = abs(steps % 256)
+        self.pi.wave_chain([
+            255, 0,                       # loop start
+            self.wid[motor_id],     # transmit waveform
+            255, num_loops, remaining_steps, 0  # loop end
+        ])
+        
+        while self.pi.wave_tx_busy():
+            time.sleep(0.1)
+        
+    def Finish(self):
+        self.pi.stop()
 
 
-  def Finish(self):
-    self.pi1.wave_tx_stop()
-    self.pi1.stop()
 
-  def Reset(self):
-    self.pi1.write(self.RESET, 1)  
-    self.pi1.write(self.RESET, 0) 
-    time.sleep(0.01)    
-    self.pi1.write(self.RESET, 1)     
+
+
 
 
