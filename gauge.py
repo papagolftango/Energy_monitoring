@@ -1,8 +1,13 @@
 import time
 from motor import *
+<<<<<<< HEAD
 import bme280
 
 class Gauge:
+=======
+
+class gaugeStepper:
+>>>>>>> 47adc234579e7703c6a6b156c1ed253359da6c65
      __current_val = 0
      __steps = 0
      __calibrated = False
@@ -27,13 +32,21 @@ class Gauge:
         delta = position - self.__current_val
         self.__m.Move(delta)   
         self.__current_val = position
+<<<<<<< HEAD
         
+=======
+
+     def getpos(self):
+       return(self.__current_val)
+   
+>>>>>>> 47adc234579e7703c6a6b156c1ed253359da6c65
      def Calibrate(self):
         self.MoveTo(self.max_val)
         self.MoveTo(self.min_val)
         self.__calibrated = True
         
      def GetStatus(self):
+<<<<<<< HEAD
         return(self.__current_val, self.__calibrated)
 
 
@@ -61,3 +74,10 @@ temperature,pressure,humidity = bme280.readBME280All()
 print ("Temperature : ", temperature, "C")
 print ("Pressure : ", pressure, "hPa")
 print ("Humidity : ", humidity, "%")
+=======
+        return(self.name, self.__current_val, self.__calibrated)
+     
+     def Finish(self):
+        self.__m.Finish()
+
+>>>>>>> 47adc234579e7703c6a6b156c1ed253359da6c65
