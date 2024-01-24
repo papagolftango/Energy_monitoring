@@ -34,13 +34,14 @@ def on_connect(client, userdata, flags, rc):
   client.subscribe("topic/iopi")
 
 client = mqtt.Client()
-client.connect("192.168.1.32",1883,60)
+client.username_pw_set("pgt", "2906")
+client.connect("192.168.68.96",1883,60)
 
 client.on_connect = on_connect
 client.on_message = on_message
 client.loop_forever()
 
-
+'''
 l = Gauge("consumer", 0, 6000, 3,4)
 m = Gauge("consumer", 0, 6000, 5,6)
 n = Gauge("consumer", 0, 6000, 7,8)
@@ -65,3 +66,4 @@ print ("Temperature : ", temperature, "C")
 print ("Pressure : ", pressure, "hPa")
 print ("Humidity : ", humidity, "%")
 
+'''
