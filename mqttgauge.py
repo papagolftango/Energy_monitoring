@@ -73,7 +73,7 @@ def on_message(client, userdata, msg):
 
 def on_connect(client, userdata, flags, rc):
   print("Connected with result code "+str(rc))
-  client.subscribe(topic)
+ # client.subscribe(topic)
 
 
 # Connect to MQTT broker and subscribe to topic
@@ -93,38 +93,3 @@ except KeyboardInterrupt:
     g.Finish()
 
 
-'''
-client = mqtt.Client()
-client.connect("192.168.1.32",1883,60)
-
-client._connect = on_connect
-client.on_message = on_message
-client.loop_forever()
-
-
-
-l = gaugeStepper("consumer", 0, 6000, 3,4)
-#m = gaugeStepper("consumer", 0, 6000, 5,6)
-#n = gaugeStepper("consumer", 0, 6000, 7,8)
-#o = gaugeStepper("consumer", 0, 6000, 9,10)
-l.Calibrate()
-#m.Calibrate()
-#n.Calibrate()
-#o.Calibrate()
-x,y,z = l.GetStatus()
-print(x,y)
-l.MoveTo(2400)
-l.MoveTo(2000)
-
- 
-#(chip_id, chip_version) = bme280.readBME280ID()
-#print ("Chip ID :", chip_id)
-#print ("Version :", chip_version)
- 
-temperature,pressure,humidity = bme280.readBME280All()
- 
-print ("Temperature : ", temperature, "C")
-print ("Pressure : ", pressure, "hPa")
-print ("Humidity : ", humidity, "%")
-
-'''
