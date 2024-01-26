@@ -1,8 +1,8 @@
 import time
 from motor import *
-import bme280
+# import bme280
 
-class Gauge:
+class GaugeStepper:
      __current_val = 0
      __current_steps = 0
      __calibrated = False

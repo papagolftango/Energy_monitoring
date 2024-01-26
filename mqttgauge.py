@@ -1,7 +1,7 @@
 import time
 import paho.mqtt.client as mqtt
 import argparse
-from gauge import gaugeStepper
+from gauge import *
 
 # Parse command-line arguments for GPIO pins and motor ID
 
@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 
 # create a gauge instance
-g = gaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args.stepGpio)
+g = GaugeStepper(args.motorID, args.minGauge, args.maxGauge , args.dirGpio, args.stepGpio)
 
 # MQTT settings
 MQTT_BROKER = '192.168.68.96'
@@ -42,7 +42,6 @@ def move(param):
   g.MoveTo(param)
 
 Cmds = {
-        "cal" : cal,
         "status" : status,
         "setup" : setup,
         "version": getpos,
@@ -78,7 +77,7 @@ def on_connect(client, userdata, flags, rc):
 
 # Connect to MQTT broker and subscribe to topic
 client = mqtt.Client()
-client.username_pw_set("pgt", "2906")
+client.username_pw_set("pgt", "T1nd4ll36")
 client.on_message = on_message
 client.connect(MQTT_BROKER, MQTT_PORT)
 
