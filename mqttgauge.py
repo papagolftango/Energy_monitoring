@@ -77,7 +77,7 @@ def on_connect(client, userdata, flags, rc):
 
 # Connect to MQTT broker and subscribe to topic
 client = mqtt.Client()
-client.username_pw_set("pgt", "T1nd4ll36")
+client.username_pw_set("pgt", "2906")
 client.on_message = on_message
 client.connect(MQTT_BROKER, MQTT_PORT)
 
