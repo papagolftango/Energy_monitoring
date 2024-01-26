@@ -1,7 +1,8 @@
 import time
 from motor import *
+import bme280
 
-class gaugeStepper:
+class Gauge:
      __current_val = 0
      __current_steps = 0
      __calibrated = False
@@ -30,11 +31,11 @@ class gaugeStepper:
         delta = position - self.__current_val
         self.__m.move(self.id,delta*self.__scale)   
         self.__current_val = position
-   
 
      def GetPos(self):
        return(self.__current_val)
    
+
      def Calibrate(self):
         self.__m.move(self.id, self.__maxStep)
         self.__m.move(self.id, 0)
@@ -44,16 +45,4 @@ class gaugeStepper:
         print(self.__scale)
         
      def GetStatus(self):
-        return(self.name, self.__current_val, self.__calibrated)
-     
-     def Finish(self):
-        self.__m.Finish()
-
-m = Motor()
-l = gaugeStepper("consumer", -1000, 00, 0, m) 
-l.MoveTo(0)
-l.MoveTo(-1000)
-l.MoveTo(-250)
-
-
-
+        return(self.__current_val, self.__calibrated)
