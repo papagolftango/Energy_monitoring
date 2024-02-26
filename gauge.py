@@ -14,7 +14,7 @@ class GaugeStepper:
         self.name = name
         self.max_val = max_val
         self.min_val = min_val
-        self.id = id
+        self.id = m
         self.__m = m
         __current_val = min_val
         __step = 0
