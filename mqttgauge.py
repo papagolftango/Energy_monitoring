@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt
 import argparse
 from gauge import *
 
+
 # Parse command-line arguments for GPIO pins and motor ID
 parser = argparse.ArgumentParser()
 parser.add_argument('motorID', type=str, help='Unique motor identifier')
