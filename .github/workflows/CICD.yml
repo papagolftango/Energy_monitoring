@@ -1,9 +1,7 @@
 name: CI/CD for RPI Python Program
 
 on:
-  workflow_dispatch:  # Enable manual workflow runs
-
-  
+  workflow_dispatch:
 
 jobs:
   build_and_test:
@@ -23,12 +21,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Verify installation
+      run: |
+        pip list  # List installed packages to verify installation
+        which behave  # Check if behave is in the PATH
+
     - name: Run tests
       run: |
-        behave  # Replace with your test command, if different
+        behave  # This should now work if behave is installed correctly
 
     - name: Build and package
       run: |
         # Add build steps if necessary, e.g., packaging the Python application
-        # For example:
-        # python setup.py sdist bdist_wheel
