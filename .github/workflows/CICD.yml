@@ -1,12 +1,9 @@
 name: CI/CD for RPI Python Program
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:  # Enable manual workflow runs
+
+  
 
 jobs:
   build_and_test:
