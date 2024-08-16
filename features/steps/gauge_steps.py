@@ -1,36 +1,50 @@
 from behave import given, when, then
-from gauge import GaugeStepper
 from unittest.mock import Mock
-from motor import Motor  # Import the Motor class
+from gauge import Gauge  # Replace 'your_module' with the actual module name where Gauge is defined
+from mock_motor import MockMotor
 
 @given('the gauge is initialized')
-def step_given_gauge_initialized(context):
-    context.motor = Mock(spec=Motor)  # Create a mocked instance of Motor
-    context.motor.get_position.return_value = 0  # Set the return value of get_position to 0
-    context.gauge = GaugeStepper(context.motor, "Motor1", 1, 0, 100)
-
-@given('the motor is initialized')
-def step_given_motor_initialized(context):
-    if not hasattr(context, 'gauge'):
-        context.motor = Mock(spec=Motor)  # Create a mocked instance of Motor
-        context.motor.get_position.return_value = 0  # Set the return value of get_position to 0
-        context.gauge = GaugeStepper(context.motor, "Motor1", 1, 0, 100)
-    context.motor = context.gauge.motor  # Assuming motor control is part of the gauge
+def step_impl(context):
+    motor_id = "test"
+    motorName = "1"
+    min_val = 0
+    max_val = 1000
+    mock_motor = MockMotor()  # Mock the Motor class
+ #   mock_motor.get_position.return_value = 0  # Ensure it returns an
+    context.gauge = Gauge(mock_motor, motorName, motor_id, min_val, max_val)
+ 
 
 @when('the gauge is calibrated')
-def step_when_gauge_calibrated(context):
+def step_impl(context):
     context.gauge.calibrate()
 
-@when('I move the gauge to position {position:d}')
-def step_when_move_gauge_to_position(context, position):
-    context.gauge.move_to(position)
-
-@then(u'the gauge should be calibrated')
+@then('the gauge should be calibrated')
 def step_impl(context):
-    # Check if the gauge is calibrated
-    assert context.gauge.calibrated, "Gauge is not calibrated"
+    assert context.gauge.is_calibrated()
 
-    # Check if the gauge's position is at the minimum value
-    assert context.gauge.position == context.gauge.min_val, (
-        f"Gauge position is {context.gauge.position}, expected {context.gauge.min_val}"
-    )
+@given('the gauge is calibrated')
+def step_impl(context):
+    motor_id = "test"
+    motorName = "1"
+    min_val = 0
+    max_val = 1000
+    mock_motor = Mock()  # Mock the Motor class
+    context.gauge = Gauge(mock_motor, motorName, motor_id, min_val, max_val)
+    context.gauge.calibrate()
+    assert context.gauge.is_calibrated()
+
+@when('the gauge is moved to {value:d}')
+def step_impl(context, value):
+    context.gauge.move_to(value)
+
+@then('the gauge should read {value:d}')
+def step_impl(context, value):
+    assert context.gauge.get_position() == value
+
+@then('the gauge should read its maximum value')
+def step_impl(context):
+    assert context.gauge.get_position() == context.gauge.max_value()
+
+@then('the gauge should read its minimum value')
+def step_impl(context):
+    assert context.gauge.get_position() == context.gauge.min_value()
