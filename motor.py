@@ -1,17 +1,19 @@
+import sys
 import time 
-from pigpio import *
+if 'unittest' not in sys.modules:
+    import pigpio
 
 class Motor:
     RESET = 26
 
     def __init__(self):
         self.wid = [0]*4
-        self.pi = pigpio()
+        self.pi = pigpio.pi()
         self.motors = [
-            {"step_pin": 17, "dir_pin": 23, "wid" : self.wid[0]},
-            {"step_pin": 18, "dir_pin": 24, "wid": self.wid[1]},
-            {"step_pin": 27, "dir_pin": 2, "wid" : self.wid[2]},
-            {"step_pin": 22, "dir_pin": 5, "wid" : self.wid[3]}
+            {"step_pin": 17, "dir_pin": 23, "wid": self.wid[0], "position": 0},
+            {"step_pin": 18, "dir_pin": 24, "wid": self.wid[1], "position": 0},
+            {"step_pin": 27, "dir_pin": 2, "wid": self.wid[2], "position": 0},
+            {"step_pin": 22, "dir_pin": 5, "wid": self.wid[3], "position": 0}
         ]
 
         for motor in self.motors:
@@ -53,12 +55,18 @@ class Motor:
         
         while self.pi.wave_tx_busy():
             time.sleep(0.1)
-        
+                # Update the position
+
+        self.motors[motor_id]["position"] += steps
+
     def Finish(self):
         self.pi.stop()
 
 
-
+    def get_position(self, motor_id):
+        if motor_id < 0 or motor_id >= len(self.motors):
+            raise ValueError("Invalid motor_id")
+        return self.motors[motor_id]["position"]
 
 
 

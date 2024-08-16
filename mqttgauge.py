@@ -1,65 +1,50 @@
 import time
 import paho.mqtt.client as mqtt
 import argparse
-from gauge import *
+import motor
+from gauge import GaugeStepper
 
+class MQTTGauge:
+    def __init__(self, motorNumber, motorID, minGauge, maxGauge):
+        self.motor = Motor()
+        self.gauge_stepper = GaugeStepper(self.motor, motorName, motorID, minGauge, maxGauge)
+        self.MQTT_BROKER = '192.168.68.96'
+        self.MQTT_PORT = 1883
+        self.MQTT_BASE_TOPIC = 'PowerGauge/Motors/{}'.format(motorID)
+        self.client = mqtt.Client()
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
 
-# Parse command-line arguments for GPIO pins and motor ID
-parser = argparse.ArgumentParser()
-parser.add_argument('motorID', type=str, help='Unique motor identifier')
-parser.add_argument('minGauge', type=int, help='min value for gauge position')
-parser.add_argument('maxGauge', type=int, help='max value for gauge position')
-args = parser.parse_args()
+    def on_connect(self, client, userdata, flags, rc):
+        print("Connected with result code " + str(rc))
+        client.subscribe(self.MQTT_BASE_TOPIC + "/#")
 
-# Create a gauge instance
-g = GaugeStepper(args.motorID, args.minGauge, args.maxGauge)
+    def on_message(self, client, userdata, msg):
+        payload = msg.payload.decode()
+        print(f"Received message: {payload}")
+        # Handle the message based on the topic and payload
 
-# MQTT settings
-MQTT_BROKER = '192.168.68.96'
-MQTT_PORT = 1883
-MQTT_BASE_TOPIC = 'PowerGauge/Motors/{}'.format(args.motorID)  # Base topic with motor ID
+    def status(self, param):
+        print("Status", param)
+        self.gauge_stepper.GetStatus()
 
-def status(param, motor_instance):
-    print("Status", param)
-    motor_instance.GetStatus()
-  
-def setup(param, motor_instance):
-    print("Setup", param)
-    motor_instance.Calibrate()
+    def setup(self, param):
+        print("Setup", param)
+        self.gauge_stepper.Calibrate()
 
-def getpos(param, motor_instance):
-    print("GetPos", param)
-    print(motor_instance.getpos())
+    def cal(self, param):
+        print("Cal", param)
+        # Implement calibration logic
 
-def move(param, motor_instance):
-    print("Move", param)
-    motor_instance.MoveTo(param)
+    def version(self, param):
+        print("Version", param)
+        # Implement version logic
 
-Cmds = {
-    "status": status,
-    "setup": setup,
-    "getPosition": getpos,
-    "moveTo": move,
-}
+    def message(self, param):
+        print("Message", param)
+        # Implement message handling logic
 
-
-#
-def on_message(client, userdata, msg):
-    print(msg.topic + " " + str(msg.payload))
-    topic_parts = msg.topic.split('/')
-    if len(topic_parts) == 4 and topic_parts[2] == args.motorID:
-        command = topic_parts[3]
-        payload = msg.payload.decode('utf-8')
-        if command in Cmds:
-            Cmds[command](payload, g)
-        else:
-            print("Unknown command")
-
-# MQTT Client Setup
-client = mqtt.Client()
-client.on_message = on_message
-client.connect(MQTT_BROKER, MQTT_PORT, 60)
-
-# Subscribe to all commands for this motor
-client.subscribe(MQTT_BASE_TOPIC + '/#')
-client.loop_forever()
+def main(motorNumber, motorID, minGauge, maxGauge):
+    mqtt_gauge = MQTTGauge(motorName, motorID, minGauge, maxGauge)
+    mqtt_gauge.client.connect(mqtt_gauge.MQTT_BROKER, mqtt_gauge.MQTT_PORT, 60)
+    mqtt_gauge.client.loop_forever()
