@@ -1,7 +1,7 @@
 import time
 import paho.mqtt.client as mqtt
 import argparse
-import motor
+from motor import Motor  # Import the Motor class
 from gauge import GaugeStepper
 
 class MQTTGauge:
@@ -44,7 +44,3 @@ class MQTTGauge:
         print("Message", param)
         # Implement message handling logic
 
-def main(motorNumber, motorID, minGauge, maxGauge):
-    mqtt_gauge = MQTTGauge(motorName, motorID, minGauge, maxGauge)
-    mqtt_gauge.client.connect(mqtt_gauge.MQTT_BROKER, mqtt_gauge.MQTT_PORT, 60)
-    mqtt_gauge.client.loop_forever()

@@ -1,7 +1,7 @@
 from behave import given, when, then
 from gauge import GaugeStepper
 from unittest.mock import Mock
-from motor import Motor  # Import the Motor class
+
 
 @given('the gauge is initialized')
 def step_given_gauge_initialized(context):
