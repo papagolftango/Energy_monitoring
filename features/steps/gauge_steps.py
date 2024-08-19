@@ -1,7 +1,8 @@
 from behave import given, when, then
 from unittest.mock import Mock
-from gauge import Gauge  # Replace 'your_module' with the actual module name where Gauge is defined
 from mock_motor import MockMotor
+from gauge import Gauge  # Replace 'your_module' with the actual module name where Gauge is defined
+
 
 @given('the gauge is initialized')
 def step_impl(context):
@@ -28,7 +29,7 @@ def step_impl(context):
     motorName = "1"
     min_val = 0
     max_val = 1000
-    mock_motor = Mock()  # Mock the Motor class
+    mock_motor = MockMotor()  # Mock the Motor class
     context.gauge = Gauge(mock_motor, motorName, motor_id, min_val, max_val)
     context.gauge.calibrate()
     assert context.gauge.is_calibrated()
@@ -39,12 +40,15 @@ def step_impl(context, value):
 
 @then('the gauge should read {value:d}')
 def step_impl(context, value):
+    print(context.gauge.get_position(),value)
     assert context.gauge.get_position() == value
 
 @then('the gauge should read its maximum value')
 def step_impl(context):
+    print(context.gauge.get_position(),context.gauge.max_value())
     assert context.gauge.get_position() == context.gauge.max_value()
 
 @then('the gauge should read its minimum value')
 def step_impl(context):
+    print(context.gauge.get_position(),context.gauge.min_value())
     assert context.gauge.get_position() == context.gauge.min_value()
