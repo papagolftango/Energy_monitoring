@@ -11,9 +11,9 @@ Feature: Gauge Calibration and Movement
     Then the gauge should read 50
 
   Scenario: Move the gauge beyond its maximum limit
-    Given the gauge is calibrated
-    When the gauge is moved to 7000
-    Then the gauge should read its maximum value
+   Given the gauge is calibrated
+   When the gauge is moved to 7000
+   Then the gauge should read its maximum value
 
   Scenario: Move the gauge below its minimum limit
     Given the gauge is calibrated
