@@ -11,30 +11,28 @@ def step_impl(context):
         motor_id = int(row['motor_id'])
         min_val = float(row['min_val'])
         max_val = float(row['max_val'])
-        context.gauges[motor_id] = Gauge(motor=MockMotor(), motor_name=f"TestMotor{motor_id}", motor_id=motor_id, min_val=min_val, max_val=max_val)
+        context.gauges[motor_id] = Gauge(motor=MockMotor(), motor_id=motor_id, min_val=min_val, max_val=max_val)
 
 @given('the gauge is initialized with motor ID {motor_id:d} and min value {min_val:f} and max value {max_val:f}')
 def step_impl(context, motor_id, min_val, max_val):
-    context.gauge = Gauge(motor=MockMotor(), motor_name=f"TestMotor{motor_id}", motor_id=motor_id, min_val=min_val, max_val=max_val)
+    context.gauge = Gauge(motor=MockMotor(), motor_id=motor_id, min_val=min_val, max_val=max_val)
 
 @given('the gauge is initialized')
 def step_impl(context):
-    motor_id = "test"
-    motorName = "1"
+    motor_id = 1
     min_val = 0
     max_val = 1000
     mock_motor = MockMotor()  # Mock the Motor class
  #   mock_motor.get_position.return_value = 0  # Ensure it returns an
-    context.gauge = Gauge(mock_motor, motorName, motor_id, min_val, max_val)
+    context.gauge = Gauge(mock_motor, motor_id, min_val, max_val)
 
 @given('the gauge is calibrated')
 def step_impl(context):
-    motor_id = "test"
-    motorName = "1"
+    motor_id = 1
     min_val = 0
     max_val = 1000
     mock_motor = MockMotor()  # Mock the Motor class
-    context.gauge = Gauge(mock_motor, motorName, motor_id, min_val, max_val)
+    context.gauge = Gauge(mock_motor, motor_id, min_val, max_val)
     context.gauge.calibrate()
     assert context.gauge.is_calibrated()
 

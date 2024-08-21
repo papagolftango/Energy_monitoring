@@ -1,7 +1,7 @@
 class Gauge:
-    def __init__(self, motor, motor_name, motor_id, min_val, max_val):
+    def __init__(self, motor, motor_id, min_val, max_val):
         self.motor = motor
-        self.name = motor_name
+  
         self.motor_id = motor_id
         self.min_val = float(min_val)
         self.max_val = float(max_val)
