@@ -132,3 +132,9 @@ class Gauges:
     
     def is_calibrated(self, gauge_id):
         return self.motor_config[gauge_id]["calibrated"]
+    
+    def get_name(self, gauge_id):
+        return self.motor_config[gauge_id]["name"]
+
+    def set_name(self, gauge_id, name):
+        self.motor_config[gauge_id]["name"] = name

@@ -1,45 +1,80 @@
-import time
 import paho.mqtt.client as mqtt
-import argparse
-
+import json
 from gauges import Gauges
 
-class MQTTGauge:
-    def __init__(self, motorNumber, motorID, minGauge, maxGauge):
-        
-        self.MQTT_BROKER = '192.168.68.96'
-        self.MQTT_PORT = 1883
-        self.MQTT_BASE_TOPIC = 'PowerGauge/Motors/{}'.format(motorID)
-        self.client = mqtt.Client()
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
+# Initialize Gauges
+gauges = Gauges()
 
-    def on_connect(self, client, userdata, flags, rc):
-        print("Connected with result code " + str(rc))
-        client.subscribe(self.MQTT_BASE_TOPIC + "/#")
+# MQTT settings
+BROKER = 'localhost'
+PORT = 1883
+TOPIC_PREFIX = 'gauges/'
 
-    def on_message(self, client, userdata, msg):
-        payload = msg.payload.decode()
-        print(f"Received message: {payload}")
-        # Handle the message based on the topic and payload
+# MQTT callback functions
+def on_connect(client, userdata, flags, rc):
+    print(f"Connected with result code {rc}")
+    client.subscribe(f"{TOPIC_PREFIX}#")
 
-    def status(self, param):
-        print("Status", param)
-        self.gauge_stepper.GetStatus()
+def on_message(client, userdata, msg):
+    topic = msg.topic
+    payload = msg.payload.decode('utf-8')
+    print(f"Received message '{payload}' on topic '{topic}'")
 
-    def setup(self, param):
-        print("Setup", param)
-        self.gauge_stepper.Calibrate()
+    # Parse the topic to determine the action
+    parts = topic.split('/')
+    if len(parts) < 3:
+        print("Invalid topic format")
+        return
 
-    def cal(self, param):
-        print("Cal", param)
-        # Implement calibration logic
+    gauge_name = parts[1]
+    action = parts[2]
 
-    def version(self, param):
-        print("Version", param)
-        # Implement version logic
+    # Find the gauge by name
+    gauge_id = next((i for i, g in enumerate(gauges.motor_config) if g["name"] == gauge_name), None)
+    if gauge_id is None:
+        print(f"Gauge '{gauge_name}' not found")
+        return
 
-    def message(self, param):
-        print("Message", param)
-        # Implement message handling logic
+    if action == 'query':
+        handle_query(client, gauge_id)
+    elif action == 'calibrate':
+        handle_calibrate(client, gauge_id)
+    elif action == 'move':
+        handle_move(client, gauge_id, payload)
+    else:
+        print(f"Unknown action '{action}'")
 
+def handle_query(client, gauge_id):
+    gauge_info = {
+        "name": gauges.get_name(gauge_id),
+        "min_val": gauges.get_min_value(gauge_id),
+        "max_val": gauges.get_max_value(gauge_id),
+        "calibrated": gauges.is_calibrated(gauge_id),
+        "position": gauges.get_position(gauge_id)
+    }
+    response_topic = f"{TOPIC_PREFIX}{gauges.get_name(gauge_id)}/response"
+    client.publish(response_topic, json.dumps(gauge_info))
+
+def handle_calibrate(client, gauge_id):
+    gauges.calibrate(gauge_id)
+    response_topic = f"{TOPIC_PREFIX}{gauges.get_name(gauge_id)}/response"
+    client.publish(response_topic, json.dumps({"calibrated": gauges.is_calibrated(gauge_id)}))
+
+def handle_move(client, gauge_id, payload):
+    try:
+        position = float(payload)
+        gauges.motor_steps(gauge_id, position)
+        response_topic = f"{TOPIC_PREFIX}{gauges.get_name(gauge_id)}/response"
+        client.publish(response_topic, json.dumps({"position": gauges.get_position(gauge_id)}))
+    except ValueError:
+        print(f"Invalid position value '{payload}'")
+
+# Set up MQTT client
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_message = on_message
+
+client.connect(BROKER, PORT, 60)
+
+# Start the MQTT client loop
+client.loop_forever()
