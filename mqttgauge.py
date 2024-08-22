@@ -1,13 +1,12 @@
 import time
 import paho.mqtt.client as mqtt
 import argparse
-from motor import Motor  # Import the Motor class
-from gauge import GaugeStepper
+
+from gauges import Gauges
 
 class MQTTGauge:
     def __init__(self, motorNumber, motorID, minGauge, maxGauge):
-        self.motor = Motor()
-        self.gauge_stepper = GaugeStepper(self.motor, motorName, motorID, minGauge, maxGauge)
+        
         self.MQTT_BROKER = '192.168.68.96'
         self.MQTT_PORT = 1883
         self.MQTT_BASE_TOPIC = 'PowerGauge/Motors/{}'.format(motorID)

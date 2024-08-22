@@ -1,88 +1,57 @@
 from behave import given, when, then
-from unittest.mock import Mock
-from mock_motor import MockMotor
-from gauge import Gauge  # Import the Gauge class from the gauge module
- 
+from unittest.mock import MagicMock, patch
+from gauges import Gauges
 
-@given('the gauges are initialized with the following parameters')
+# Mock pigpio
+mock_pigpio = MagicMock()
+mock_pigpio.wave_create = MagicMock()
+mock_pigpio.wave_send_once = MagicMock()
+mock_pigpio.wave_send_repeat = MagicMock()
+mock_pigpio.wave_tx_busy = MagicMock()
+mock_pigpio.wave_tx_stop = MagicMock()
+mock_pigpio.wave_delete = MagicMock()
+
+# Patch pigpio.pi to return the mock instance
+patcher = patch('pigpio.pi', return_value=mock_pigpio)
+patcher.start()
+
+# Stop patching after tests
+def after_all(context):
+    patcher.stop()
+
+@given('the gauges are initialized')
 def step_impl(context):
-    context.gauges = {}
-    for row in context.table:
-        motor_id = int(row['motor_id'])
-        min_val = float(row['min_val'])
-        max_val = float(row['max_val'])
-        context.gauges[motor_id] = Gauge(motor=MockMotor(), motor_id=motor_id, min_val=min_val, max_val=max_val)
+    context.gauges = Gauges()
 
-@given('the gauge is initialized with motor ID {motor_id:d} and min value {min_val:f} and max value {max_val:f}')
-def step_impl(context, motor_id, min_val, max_val):
-    context.gauge = Gauge(motor=MockMotor(), motor_id=motor_id, min_val=min_val, max_val=max_val)
-
-@given('the gauge is initialized')
+@when('all gauges are calibrated')
 def step_impl(context):
-    motor_id = 1
-    min_val = 0
-    max_val = 1000
-    mock_motor = MockMotor()  # Mock the Motor class
- #   mock_motor.get_position.return_value = 0  # Ensure it returns an
-    context.gauge = Gauge(mock_motor, motor_id, min_val, max_val)
+    for motor in context.gauges.motor_config:
+        motor_id = motor["motor_id"]
+        context.gauges.calibrate(motor_id)
 
-@given('the gauge is calibrated')
+@then(u'all gauges should be calibrated')
 def step_impl(context):
-    motor_id = 1
-    min_val = 0
-    max_val = 1000
-    mock_motor = MockMotor()  # Mock the Motor class
-    context.gauge = Gauge(mock_motor, motor_id, min_val, max_val)
-    context.gauge.calibrate()
-    assert context.gauge.is_calibrated()
+    all_calibrated = all(context.gauges.is_calibrated(motor["motor_id"]) for motor in context.gauges.motor_config)
+    assert all_calibrated, "Not all gauges are calibrated"
+     
 
-@when('the gauges are moved to the following positions')
-def step_impl(context):
-    for row in context.table:
-        motor_id = int(row['motor_id'])
-        move_to = float(row['move_to'])
-        context.gauges[motor_id].move_to(move_to)
+@when('the gauge {gauge_id:d} is moved to {value:f}')
+def step_impl(context, gauge_id, value):
+    context.gauges.move_to(gauge_id, value)
 
-@when('the gauge is moved to {value:f}')
-def step_impl(context, value):
-    context.gauge.move_to(value)
+@then('the gauge {gauge_id:d} should read {expected_value:f}')
+def step_impl(context, gauge_id, expected_value):
+    actual_value = context.gauges.get_position(gauge_id)
+    assert actual_value == expected_value, f"Expected {expected_value}, but got {actual_value}"
 
-@when('the gauge is calibrated')
-def step_impl(context):
-    context.gauge.calibrate()
+@then('the gauge {gauge_id:d} should read its maximum value')
+def step_impl(context, gauge_id):
+    max_value = context.gauges.get_max_value(gauge_id)
+    actual_value = context.gauges.get_position(gauge_id)
+    assert actual_value == max_value, f"Expected {max_value}, but got {actual_value}"
 
-@when('the gauge is moved to {value:d}')
-def step_impl(context, value):
-    context.gauge.move_to(value)
-
-@then('the gauge should read {value:d}')
-def step_impl(context, value):
-    print(context.gauge.get_position(),value)
-    assert context.gauge.get_position() == value
-
-@then('the gauge should read its maximum value')
-def step_impl(context):
-    print(context.gauge.get_position(),context.gauge.max_value())
-    assert context.gauge.get_position() == context.gauge.max_value()
-
-@then('the gauge should read its minimum value')
-def step_impl(context):
-    print(context.gauge.get_position(),context.gauge.min_value())
-    assert context.gauge.get_position() == context.gauge.min_value()
-
-@then('the gauge should read {value:f}')
-def step_impl(context, value):
-    assert context.gauge.get_position() == value
-
-@then('the gauges should read the following values')
-def step_impl(context):
-    for row in context.table:
-        motor_id = int(row['motor_id'])
-        expected_value = float(row['expected_value'])
-        actual_value = context.gauges[motor_id].get_position()
-        assert actual_value == expected_value, f"Motor {motor_id}: Expected {expected_value}, but got {actual_value}"
-
-@then('the gauge should be calibrated')
-def step_impl(context):
-    assert context.gauge.is_calibrated()
-
+@then('the gauge {gauge_id:d} should read its minimum value')
+def step_impl(context, gauge_id):
+    min_value = context.gauges.get_min_value(gauge_id)
+    actual_value = context.gauges.get_position(gauge_id)
+    assert actual_value == min_value, f"Expected {min_value}, but got {actual_value}"
