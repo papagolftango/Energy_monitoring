@@ -18,15 +18,19 @@ class Gauges:
         ]
 
         # Calculate scale factors
-        for motor in self.motor_config:
-            motor["scale_factor"] = self.MOTOR_MAX_STEPS / (motor["max_val"] - motor["min_val"])
-            print( motor["scale_factor"])
+        self.calcScaleFactors()
 
         self.wid = [None] * len(self.motor_config)  # Initialize waveform IDs
         self.calibrated = False  # Initialize calibrated flag
 
         self.initialize_gpio()
         self.setup_waveforms()
+
+    def calcScaleFactors(self):
+        # Calculate scale factors
+        for motor in self.motor_config:
+            motor["scale_factor"] = self.MOTOR_MAX_STEPS / (motor["max_val"] - motor["min_val"])
+            print( motor["scale_factor"])
 
     def initialize_gpio(self):
         self.pi.set_mode(self.RESET_PIN, pigpio.OUTPUT)
@@ -124,8 +128,16 @@ class Gauges:
         self.motor_config[motor_id]["calibrated"] = True  # Set calibrated flag
         print(f"Calibration complete for motor {motor_id}.")
 
+    def set_min_value(self, gauge_id, val):
+        self.motor_config[gauge_id]["min_val"] = val
+        calcScaleFactors()
+
     def get_min_value(self, gauge_id):
         return self.motor_config[gauge_id]["min_val"]
+
+    def set_max_value(self, gauge_id, val):
+        self.motor_config[gauge_id]["max_val"] = val
+        calcScaleFactors()
 
     def get_max_value(self, gauge_id):
         return self.motor_config[gauge_id]["max_val"]
