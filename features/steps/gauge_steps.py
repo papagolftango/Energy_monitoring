@@ -55,3 +55,50 @@ def step_impl(context, gauge_id):
     min_value = context.gauges.get_min_value(gauge_id)
     actual_value = context.gauges.get_position(gauge_id)
     assert actual_value == min_value, f"Expected {min_value}, but got {actual_value}"
+    
+
+
+
+
+
+
+
+
+
+
+@given('the gauge {gauge_id:d} has a max value of {max_val:f} and a min value of {min_val:f}')
+def step_impl(context, gauge_id, max_val, min_val):
+    context.gauges.set_max_value(gauge_id, max_val)
+    context.gauges.set_min_value(gauge_id, min_val)
+    assert context.gauges.get_max_value(gauge_id) == max_val, f"Expected max value {max_val}, but got {context.gauges.get_max_value(gauge_id)}"
+    assert context.gauges.get_min_value(gauge_id) == min_val, f"Expected min value {min_val}, but got {context.gauges.get_min_value(gauge_id)}"
+
+@when('I set the max value of gauge {gauge_id:d} to {max_val:f}')
+def step_impl(context, gauge_id, max_val):
+    context.gauges.set_max_value(gauge_id, max_val)
+
+@when('I set the min value of gauge {gauge_id:d} to {min_val:f}')
+def step_impl(context, gauge_id, min_val):
+    context.gauges.set_min_value(gauge_id, min_val)
+
+@then('the gauge {gauge_id:d} should have a max value of {max_val:f}')
+def step_impl(context, gauge_id, max_val):
+    assert context.gauges.get_max_value(gauge_id) == max_val, f"Expected max value {max_val}, but got {context.gauges.get_max_value(gauge_id)}"
+
+@then('the gauge {gauge_id:d} should have a min value of {min_val:f}')
+def step_impl(context, gauge_id, min_val):
+    assert context.gauges.get_min_value(gauge_id) == min_val, f"Expected min value {min_val}, but got {context.gauges.get_min_value(gauge_id)}"
+
+@when('I move the gauge {gauge_id:d} to {value:f}')
+def step_impl(context, gauge_id, value):
+    context.gauges.move_to(gauge_id, value)
+
+@then('the gauge {gauge_id:d} should read {value:f}')
+def step_impl(context, gauge_id, value):
+    assert context.gauges.get_position(gauge_id) == value, f"Expected position {value}, but got {context.gauges.get_position(gauge_id)}"
+
+@then('the gauge {gauge_id:d} should read its minimum value')
+def step_impl(context, gauge_id):
+    min_value = context.gauges.get_min_value(gauge_id)
+    actual_value = context.gauges.get_position(gauge_id)
+    assert actual_value == min_value, f"Expected {min_value}, but got {actual_value}"

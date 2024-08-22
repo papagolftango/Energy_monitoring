@@ -130,14 +130,16 @@ class Gauges:
 
     def set_min_value(self, gauge_id, val):
         self.motor_config[gauge_id]["min_val"] = val
-        calcScaleFactors()
+        self.calcScaleFactors()
 
     def get_min_value(self, gauge_id):
         return self.motor_config[gauge_id]["min_val"]
 
     def set_max_value(self, gauge_id, val):
         self.motor_config[gauge_id]["max_val"] = val
-        calcScaleFactors()
+        self.calcScaleFactors()
+          
+          
 
     def get_max_value(self, gauge_id):
         return self.motor_config[gauge_id]["max_val"]
