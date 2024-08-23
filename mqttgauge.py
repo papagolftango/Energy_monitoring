@@ -6,7 +6,7 @@ from gauges import Gauges
 gauges = Gauges()
 
 # MQTT settings
-BROKER = 'localhost'
+BROKER = '192.168.68.86'
 PORT = 1883
 TOPIC_PREFIX = 'gauges/'
 
@@ -45,20 +45,13 @@ def on_message(client, userdata, msg):
         print(f"Unknown action '{action}'")
 
 def handle_query(client, gauge_id):
-    gauge_info = {
-        "name": gauges.get_name(gauge_id),
-        "min_val": gauges.get_min_value(gauge_id),
-        "max_val": gauges.get_max_value(gauge_id),
-        "calibrated": gauges.is_calibrated(gauge_id),
-        "position": gauges.get_position(gauge_id)
-    }
     response_topic = f"{TOPIC_PREFIX}{gauges.get_name(gauge_id)}/response"
-    client.publish(response_topic, json.dumps(gauge_info))
+    client.publish(response_topic, json.dumps({"calibrated": gauges.is_calibrated(gauge_id)}))
 
 def handle_calibrate(client, gauge_id):
     gauges.calibrate(gauge_id)
     response_topic = f"{TOPIC_PREFIX}{gauges.get_name(gauge_id)}/response"
-    client.publish(response_topic, json.dumps({"calibrated": gauges.is_calibrated(gauge_id)}))
+    client.publish(response_topic, json.dumps({"calibrated": True}))
 
 def handle_move(client, gauge_id, payload):
     try:

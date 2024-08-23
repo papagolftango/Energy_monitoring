@@ -10,6 +10,8 @@ class Gauges:
 
         self.reset_gpio()  # Reset the board
 
+        self.initialize_gpio()
+        
         self.motor_config = [
             {"motor_id": 0, "name": "Motor 1", "max_val": 100.0, "min_val": -100.0, "scale_factor": None, "direction_pin": 5, "step_pin": 17, "pos": 0.0},
             {"motor_id": 1, "name": "Motor 2", "max_val": 1.0, "min_val": 0.0, "scale_factor": None, "direction_pin": 6, "step_pin": 22, "pos": 10.0},
@@ -23,7 +25,7 @@ class Gauges:
         self.wid = [None] * len(self.motor_config)  # Initialize waveform IDs
         self.calibrated = False  # Initialize calibrated flag
 
-        self.initialize_gpio()
+     
         self.setup_waveforms()
 
     def calcScaleFactors(self):
