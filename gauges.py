@@ -44,6 +44,7 @@ class Gauges:
         self.pi.write(self.RESET_PIN, 1)
 
     def setup_waveforms(self):
+    try:
         for motor in self.motor_config:
             self.pi.wave_clear()  # Clear any existing waveforms
             self.pi.wave_add_generic([
@@ -51,8 +52,16 @@ class Gauges:
                 pigpio.pulse(0, 1 << motor["step_pin"], 1000)   # Step off for 1000 microseconds
             ])
             motor["wid"] = self.pi.wave_create()
+            if motor["wid"] < 0:
+                raise pigpio.error(f"Failed to create waveform for motor {motor['motor_id']}")
+            print(f"Waveform created for motor {motor['motor_id']} with ID {motor['wid']}")
+    except pigpio.error as e:
+        print(f"Pigpio error during waveform setup: {e}")
+    except Exception as e:
+        print(f"Unexpected error during waveform setup: {e}")
 
-    def motor_steps(self, motor_id, steps):
+def motor_steps(self, motor_id, steps):
+    try:
         motor = self.motor_config[motor_id]
         direction = 1 if steps > 0 else 0
         steps = abs(steps)
@@ -61,6 +70,8 @@ class Gauges:
         
         num_loops = abs(steps // 256)
         remaining_steps = abs(steps % 256)
+        if motor["wid"] is None:
+            raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
         self.pi.wave_chain([
             255, 0,                       # loop start
             motor["wid"],                 # transmit waveform
@@ -69,6 +80,10 @@ class Gauges:
         
         while self.pi.wave_tx_busy() == True:
             time.sleep(0.01)  # Wait for the wave transmission to finish
+    except pigpio.error as e:
+        print(f"Pigpio error during motor steps: {e}")
+    except Exception as e:
+        print(f"Unexpected error during motor steps: {e}")
 
     def stop_all_motors(self):
         self.pi.wave_tx_stop()
