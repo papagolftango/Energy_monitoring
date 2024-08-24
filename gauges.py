@@ -1,4 +1,4 @@
-import time
+iimport time
 import pigpio
 
 class Gauges:
@@ -23,6 +23,7 @@ class Gauges:
         self.calibrated = False  # Initialize calibrated flag
 
         self.setup_waveforms()
+        self.calibrate_all_gauges()  # Calibrate all gauges during initialization
 
     def calcScaleFactors(self):
         # Calculate scale factors
@@ -80,15 +81,25 @@ class Gauges:
         print(f"Scaling value: {value}")
         print(f"min_val: {gauge_config['min_val']}, max_val: {gauge_config['max_val']}")
 
+    def calibrate_gauge(self, motor_id):
+        motor = self.motor_config[motor_id]
+    
+        self.motor_steps(motor_id, self.MOTOR_MAX_STEPS)
+        self.motor_steps(motor_id, 0)
+        motor["pos"] = 0.0
+        motor["calibrated"] = True
+
+    def calibrate_all_gauges(self):
+        for motor in self.motor_config:
+            self.calibrate_gauge(motor["motor_id"])
+        self.calibrated = True
+
     # Setters and Getters
     def set_motor_position(self, motor_id, position):
         self.motor_config[motor_id]["pos"] = position
 
     def get_motor_position(self, motor_id):
         return self.motor_config[motor_id]["pos"]
-
-    def set_motor_calibrated(self, motor_id, calibrated):
-        self.motor_config[motor_id]["calibrated"] = calibrated
 
     def get_motor_calibrated(self, motor_id):
         return self.motor_config[motor_id]["calibrated"]
