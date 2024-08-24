@@ -44,21 +44,21 @@ class Gauges:
         self.pi.write(self.RESET_PIN, 1)
 
     def setup_waveforms(self):
-    try:
-        for motor in self.motor_config:
-            self.pi.wave_clear()  # Clear any existing waveforms
-            self.pi.wave_add_generic([
-                pigpio.pulse(1 << motor["step_pin"], 0, 1000),  # Step on for 1000 microseconds
-                pigpio.pulse(0, 1 << motor["step_pin"], 1000)   # Step off for 1000 microseconds
-            ])
-            motor["wid"] = self.pi.wave_create()
-            if motor["wid"] < 0:
-                raise pigpio.error(f"Failed to create waveform for motor {motor['motor_id']}")
-            print(f"Waveform created for motor {motor['motor_id']} with ID {motor['wid']}")
-    except pigpio.error as e:
-        print(f"Pigpio error during waveform setup: {e}")
-    except Exception as e:
-        print(f"Unexpected error during waveform setup: {e}")
+        try:
+            for motor in self.motor_config:
+                self.pi.wave_clear()  # Clear any existing waveforms
+                self.pi.wave_add_generic([
+                    pigpio.pulse(1 << motor["step_pin"], 0, 1000),  # Step on for 1000 microseconds
+                    pigpio.pulse(0, 1 << motor["step_pin"], 1000)   # Step off for 1000 microseconds
+                ])
+                motor["wid"] = self.pi.wave_create()
+                if motor["wid"] < 0:
+                    raise pigpio.error(f"Failed to create waveform for motor {motor['motor_id']}")
+                print(f"Waveform created for motor {motor['motor_id']} with ID {motor['wid']}")
+        except pigpio.error as e:
+            print(f"Pigpio error during waveform setup: {e}")
+        except Exception as e:
+            print(f"Unexpected error during waveform setup: {e}")
 
 def motor_steps(self, motor_id, steps):
     try:
