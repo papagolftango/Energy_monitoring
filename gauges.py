@@ -60,30 +60,30 @@ class Gauges:
         except Exception as e:
             print(f"Unexpected error during waveform setup: {e}")
 
-def motor_steps(self, motor_id, steps):
-    try:
-        motor = self.motor_config[motor_id]
-        direction = 1 if steps > 0 else 0
-        steps = abs(steps)
+    def motor_steps(self, motor_id, steps):
+        try:
+            motor = self.motor_config[motor_id]
+            direction = 1 if steps > 0 else 0
+            steps = abs(steps)
 
-        self.pi.write(motor["direction_pin"], direction)
-        
-        num_loops = abs(steps // 256)
-        remaining_steps = abs(steps % 256)
-        if motor["wid"] is None:
-            raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
-        self.pi.wave_chain([
-            255, 0,                       # loop start
-            motor["wid"],                 # transmit waveform
-            255, num_loops, remaining_steps, 0  # loop end
-        ])
-        
-        while self.pi.wave_tx_busy() == True:
-            time.sleep(0.01)  # Wait for the wave transmission to finish
-    except pigpio.error as e:
-        print(f"Pigpio error during motor steps: {e}")
-    except Exception as e:
-        print(f"Unexpected error during motor steps: {e}")
+            self.pi.write(motor["direction_pin"], direction)
+            
+            num_loops = abs(steps // 256)
+            remaining_steps = abs(steps % 256)
+            if motor["wid"] is None:
+                raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
+            self.pi.wave_chain([
+                255, 0,                       # loop start
+                motor["wid"],                 # transmit waveform
+                255, num_loops, remaining_steps, 0  # loop end
+            ])
+            
+            while self.pi.wave_tx_busy() == True:
+                time.sleep(0.01)  # Wait for the wave transmission to finish
+        except pigpio.error as e:
+            print(f"Pigpio error during motor steps: {e}")
+        except Exception as e:
+            print(f"Unexpected error during motor steps: {e}")
 
     def stop_all_motors(self):
         self.pi.wave_tx_stop()
