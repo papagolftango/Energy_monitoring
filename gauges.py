@@ -9,11 +9,12 @@ class Gauges:
         self.RESET_PIN = 17  # Example GPIO pin for reset
 
         self.motor_config = [
-            {"motor_id": 0, "name": "Motor 1", "max_val": 100.0, "min_val": -100.0, "scale_factor": None, "direction_pin": 5, "step_pin": 17, "pos": 0.0},
-            {"motor_id": 1, "name": "Motor 2", "max_val": 1.0, "min_val": 0.0, "scale_factor": None, "direction_pin": 6, "step_pin": 22, "pos": 10.0},
-            {"motor_id": 2, "name": "Motor 3", "max_val": 1.0, "min_val": -1.0, "scale_factor": None, "direction_pin": 13, "step_pin": 24, "pos": 5.0},
-            {"motor_id": 3, "name": "Motor 4", "max_val": 12000.0, "min_val": -6000.0, "scale_factor": None, "direction_pin": 19, "step_pin": 27, "pos": 20.0}
+            {"motor_id": 0, "name": "Motor1", "max_val": 100.0, "min_val": -100.0, "scale_factor": None, "direction_pin": 5, "step_pin": 17, "pos": 0.0, "calibrated": False},
+            {"motor_id": 1, "name": "Motor2", "max_val": 1.0, "min_val": 0.0, "scale_factor": None, "direction_pin": 6, "step_pin": 22, "pos": 10.0, "calibrated": False},
+            {"motor_id": 2, "name": "Motor3", "max_val": 1.0, "min_val": -1.0, "scale_factor": None, "direction_pin": 13, "step_pin": 24, "pos": 5.0, "calibrated": False},
+            {"motor_id": 3, "name": "Motor4", "max_val": 12000.0, "min_val": -6000.0, "scale_factor": None, "direction_pin": 19, "step_pin": 27, "pos": 20.0, "calibrated": False}
         ]
+
         self.initialize_gpio()
         self.reset_gpio()  # Reset the board
 
