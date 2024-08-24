@@ -1,4 +1,4 @@
-iimport time
+import time
 import pigpio
 
 class Gauges:
