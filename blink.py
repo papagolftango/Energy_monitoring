@@ -2,8 +2,8 @@ import pigpio
 import time
 
 # Constants
-STEP_PIN = 17  # GPIO pin for the step signal
-DIRECTION_PIN = 5  # GPIO pin for the direction signal
+STEP_PIN = 4  # GPIO pin for the step signal
+DIRECTION_PIN = 17  # GPIO pin for the direction signal
 RESET_PIN = 26  # GPIO pin for the reset signal
 STEP_DELAY = 0.1  # Delay in seconds for step pulse (100ms)
 RESET_DELAY = 0.01  # Delay in seconds for reset pulse (10ms)
