@@ -6,7 +6,7 @@ STEP_PIN = 4  # GPIO pin for the step signal
 DIRECTION_PIN = 17  # GPIO pin for the direction signal
 RESET_PIN = 26  # GPIO pin for the reset signal
 STEP_DELAY = 0.1  # Delay in seconds for step pulse (100ms)
-RESET_DELAY = 0.01  # Delay in seconds for reset pulse (10ms)
+RESET_DELAY = 0.1  # Delay in seconds for reset pulse (10ms)
 DIRECTION = 1  # Set direction to forward (1) or backward (0)
 
 # Initialize pigpio
@@ -22,7 +22,7 @@ pi.set_mode(RESET_PIN, pigpio.OUTPUT)
 # Pulse the reset pin
 pi.write(RESET_PIN, 1)
 time.sleep(RESET_DELAY)
-pi.write(RESET_PIN, 0)
+pi.write(RESET_PIN, 1)
 
 # Set the direction pin
 pi.write(DIRECTION_PIN, DIRECTION)
