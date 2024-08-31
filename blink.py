@@ -22,6 +22,8 @@ pi.set_mode(RESET_PIN, pigpio.OUTPUT)
 # Pulse the reset pin
 pi.write(RESET_PIN, 1)
 time.sleep(RESET_DELAY)
+pi.write(RESET_PIN, 0)
+time.sleep(RESET_DELAY)
 pi.write(RESET_PIN, 1)
 
 # Set the direction pin
