@@ -29,45 +29,68 @@ def on_message(client, userdata, msg):
     gauge_name = parts[1]
     action = parts[2]
 
-    # Find the gauge by name
-    gauge_id = next((i for i, g in enumerate(gauges.motor_config) if g["name"] == gauge_name), None)
-    if gauge_id is None:
-        print(f"Gauge '{gauge_name}' not found")
-        return
-
-    if action == 'query':
-        handle_query(client, gauge_id)
-    elif action == 'calibrate':
-        handle_calibrate(client, gauge_id)
-    elif action == 'move':
-        handle_move(client, gauge_id, payload)
+    # Handle the action
+    if action == 'discover':
+        handle_discover(client)
     else:
-        print(f"Unknown action '{action}'")
+        # Find the gauge by name
+        gauge_id = next((i for i, g in enumerate(gauges.motor_config) if g["name"] == gauge_name), None)
+        if gauge_id is None:
+            print(f"Gauge '{gauge_name}' not found")
+            return
+
+        if action == 'query':
+            handle_query(client, gauge_id)
+        elif action == 'calibrate':
+            handle_calibrate(client, gauge_id)
+        elif action == 'move':
+            handle_move(client, gauge_id, payload)
+        else:
+            print(f"Unknown action '{action}'")
+
+def handle_discover(client):
+    status_list = gauges.get_all_gauges_status()
+    response = {
+        "gauges": status_list
+    }
+    client.publish(f"{TOPIC_PREFIX}discover/status", json.dumps(response))
 
 def handle_query(client, gauge_id):
-    response_topic = f"{TOPIC_PREFIX}{gauges.get_name(gauge_id)}/response"
-    client.publish(response_topic, json.dumps({"calibrated": gauges.is_calibrated(gauge_id)}))
+    gauge = gauges.motor_config[gauge_id]
+    is_calibrated = gauge["motor"].is_calibrated()
+    response = {
+        "gauge": gauge["name"],
+        "is_calibrated": is_calibrated,
+        "range": gauge["range"]
+    }
+    client.publish(f"{TOPIC_PREFIX}{gauge['name']}/status", json.dumps(response))
 
 def handle_calibrate(client, gauge_id):
-    gauges.calibrate(gauge_id)
-    response_topic = f"{TOPIC_PREFIX}{gauges.get_name(gauge_id)}/response"
-    client.publish(response_topic, json.dumps({"calibrated": True}))
+    gauge = gauges.motor_config[gauge_id]
+    gauge["motor"].calibrate(gauges.MOTOR_MAX_STEPS)
+    response = {
+        "gauge": gauge["name"],
+        "calibrated": gauge["motor"].is_calibrated(),
+        "range": gauge["range"]
+    }
+    client.publish(f"{TOPIC_PREFIX}{gauge['name']}/status", json.dumps(response))
 
 def handle_move(client, gauge_id, payload):
     try:
-        position = float(payload)
-        gauges.motor_steps(gauge_id, position)
-        response_topic = f"{TOPIC_PREFIX}{gauges.get_name(gauge_id)}/response"
-        client.publish(response_topic, json.dumps({"position": gauges.get_position(gauge_id)}))
-    except ValueError:
-        print(f"Invalid position value '{payload}'")
+        data = json.loads(payload)
+        position = data.get("position")
+        if position is not None:
+            gauges.move_gauge(gauge_id, position)
+        else:
+            print("Invalid payload: 'position' not found")
+    except json.JSONDecodeError:
+        print("Failed to decode JSON")
 
 # Set up MQTT client
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
+# Connect to MQTT broker and start loop
 client.connect(BROKER, PORT, 60)
-
-# Start the MQTT client loop
 client.loop_forever()

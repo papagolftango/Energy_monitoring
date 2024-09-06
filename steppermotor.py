@@ -1,0 +1,76 @@
+import pigpio
+
+class StepperMotor:
+    MOTOR_MAX_STEPS = 200  # Example value, adjust as needed
+    
+    def __init__(self, step_pin, direction_pin):
+        self.step_pin = step_pin
+        self.direction_pin = direction_pin
+        self.pi = pigpio.pi()
+        self.is_calibrated_flag = False
+
+        # Set up the GPIO pins
+        self.pi.set_mode(self.step_pin, pigpio.OUTPUT)
+        self.pi.set_mode(self.direction_pin, pigpio.OUTPUT)
+        self.setup_waveform()
+        
+    def setup_waveform(self):
+        try:
+            self.pi.wave_clear()  # Clear any existing waveforms
+            self.pi.wave_add_generic([
+	 		    pigpio.pulse(1 << self.step_pin, 0, 1000),  # Step on for 1000 microseconds
+			    pigpio.pulse(0, 1 << self.step_pin, 1000)   # Step off for 1000 microseconds
+		    ])
+            self.wid = self.pi.wave_create()
+            if self.wid < 0:
+                raise pigpio.error(f"Failed to create waveform for motor")
+        except pigpio.error as e:
+            print(f"Pigpio error during waveform setup: {e}")
+        except Exception as e:
+            print(f"Unexpected error during waveform setup: {e}")
+
+    def moveto(self, position):
+        try:
+            direction = 1 if steps > 0 else 0
+            self.pi.write(self.direction_pin, direction)
+
+            steps = abs(steps) 
+            num_loops = abs(steps // 256)
+            remaining_steps = abs(steps % 256)
+            if self.wid is None:
+                raise pigpio.error(f"Waveform ID for motor is None")
+            self.pi.wave_chain([
+                255, 0,                       # loop start
+                self.wid,                 # transmit waveform
+                255, num_loops, remaining_steps, 0  # loop end
+            ])
+            
+            while self.pi.wave_tx_busy() == True:
+                time.sleep(0.01)  # Wait for the wave transmission to finish
+                
+        except pigpio.error as e:
+            print(f"Pigpio error during motor steps: {e}")
+        except Exception as e:
+            print(f"Unexpected error during motor steps: {e}")
+
+    def calibrate(self):    
+        self.moveto(self.MOTOR_MAX_STEPS)
+        self.moveto(0)
+        self.calibrated = True
+
+    def is_calibrated(self):
+        return self.is_calibrated_flag
+
+    def cleanup(self):
+        # Clean up the GPIO resources
+        self.pi.write(self.step_pin, 0)
+        self.pi.write(self.direction_pin, 0)
+        self.pi.stop()
+
+# Example usage
+if __name__ == "__main__":
+    motor = StepperMotor(17, 27)
+    motor.calibrate()
+    motor.moveto(100)
+    motor.cleanup()
+

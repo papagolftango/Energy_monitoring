@@ -56,16 +56,6 @@ def step_impl(context, gauge_id):
     actual_value = context.gauges.get_position(gauge_id)
     assert actual_value == min_value, f"Expected {min_value}, but got {actual_value}"
     
-
-
-
-
-
-
-
-
-
-
 @given('the gauge {gauge_id:d} has a max value of {max_val:f} and a min value of {min_val:f}')
 def step_impl(context, gauge_id, max_val, min_val):
     context.gauges.set_max_value(gauge_id, max_val)
