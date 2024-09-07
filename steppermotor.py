@@ -69,7 +69,11 @@ class StepperMotor:
 if __name__ == "__main__":
     motor = StepperMotor(step_pin=17, direction_pin=4)
     try:
-        motor.moveto(512)  # Move 512 steps
+        while True:
+            motor.moveto(512)  # Move 512 steps forward
+            time.sleep(1)      # Wait for 1 second
+            motor.moveto(-512) # Move 512 steps backward
+            time.sleep(1)      # Wait for 1 second
     except KeyboardInterrupt:
         pass
     finally:
