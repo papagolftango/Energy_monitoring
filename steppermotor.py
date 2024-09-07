@@ -1,4 +1,6 @@
+import time
 import pigpio
+import subprocess
 
 class StepperMotor:
     MOTOR_MAX_STEPS = 200  # Example value, adjust as needed
@@ -9,6 +11,14 @@ class StepperMotor:
         self.pi = pigpio.pi()
         self.is_calibrated_flag = False
 
+        # Check if pigpio daemon is running
+        if not self.pi.connected:
+            print("pigpio daemon is not running. Starting it now...")
+            subprocess.run(["sudo", "systemctl", "start", "pigpiod"])
+            self.pi = pigpio.pi()
+            if not self.pi.connected:
+                raise Exception("Could not connect to pigpio daemon")
+
         # Set up the GPIO pins
         self.pi.set_mode(self.step_pin, pigpio.OUTPUT)
         self.pi.set_mode(self.direction_pin, pigpio.OUTPUT)
@@ -18,9 +28,9 @@ class StepperMotor:
         try:
             self.pi.wave_clear()  # Clear any existing waveforms
             self.pi.wave_add_generic([
-	 		    pigpio.pulse(1 << self.step_pin, 0, 1000),  # Step on for 1000 microseconds
-			    pigpio.pulse(0, 1 << self.step_pin, 1000)   # Step off for 1000 microseconds
-		    ])
+                pigpio.pulse(1 << self.step_pin, 0, 1000),  # Step on for 1000 microseconds
+                pigpio.pulse(0, 1 << self.step_pin, 1000)   # Step off for 1000 microseconds
+            ])
             self.wid = self.pi.wave_create()
             if self.wid < 0:
                 raise pigpio.error(f"Failed to create waveform for motor")
@@ -29,7 +39,7 @@ class StepperMotor:
         except Exception as e:
             print(f"Unexpected error during waveform setup: {e}")
 
-    def moveto(self, position):
+    def moveto(self, steps):
         try:
             direction = 1 if steps > 0 else 0
             self.pi.write(self.direction_pin, direction)
@@ -41,36 +51,26 @@ class StepperMotor:
                 raise pigpio.error(f"Waveform ID for motor is None")
             self.pi.wave_chain([
                 255, 0,                       # loop start
-                self.wid,                 # transmit waveform
+                self.wid,                     # transmit waveform
                 255, num_loops, remaining_steps, 0  # loop end
             ])
-            
-            while self.pi.wave_tx_busy() == True:
-                time.sleep(0.01)  # Wait for the wave transmission to finish
-                
+            while self.pi.wave_tx_busy():  # Wait for the wave to finish
+                time.sleep(0.01)
         except pigpio.error as e:
-            print(f"Pigpio error during motor steps: {e}")
+            print(f"Pigpio error during movement: {e}")
         except Exception as e:
-            print(f"Unexpected error during motor steps: {e}")
-
-    def calibrate(self):    
-        self.moveto(self.MOTOR_MAX_STEPS)
-        self.moveto(0)
-        self.calibrated = True
-
-    def is_calibrated(self):
-        return self.is_calibrated_flag
+            print(f"Unexpected error during movement: {e}")
 
     def cleanup(self):
-        # Clean up the GPIO resources
-        self.pi.write(self.step_pin, 0)
-        self.pi.write(self.direction_pin, 0)
+        self.pi.wave_clear()
         self.pi.stop()
 
 # Example usage
 if __name__ == "__main__":
-    motor = StepperMotor(17, 27)
-    motor.calibrate()
-    motor.moveto(100)
-    motor.cleanup()
-
+    motor = StepperMotor(step_pin=17, direction_pin=4)
+    try:
+        motor.moveto(512)  # Move 512 steps
+    except KeyboardInterrupt:
+        pass
+    finally:
+        motor.cleanup()
