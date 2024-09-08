@@ -39,6 +39,21 @@ class StepperMotor:
         except Exception as e:
             print(f"Unexpected error during waveform setup: {e}")
 
+    def calibrate(self, max_steps):
+        try:
+            print("Calibrating motor...")
+            self.moveto(max_steps)
+            time.sleep(1)  # Wait for 1 second
+            self.moveto(-max_steps)
+            time.sleep(1)  # Wait for 1 second
+            self.is_calibrated_flag = True
+            print("Calibration complete")
+        except Exception as e:
+            print(f"Unexpected error during calibration: {e}")
+
+    def is_calibrated(self):
+        return self.is_calibrated_flag
+    
     def moveto(self, steps):
         try:
             direction = 1 if steps > 0 else 0
