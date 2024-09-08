@@ -7,13 +7,13 @@ class Gauges:
 
     def __init__(self):
         self.pi = pigpio.pi()  # Initialize pigpio locally
-        self.RESET_PIN = 17  # Example GPIO pin for reset
+        self.RESET_PIN = 26  # Example GPIO pin for reset
 
         self.gauge_config = [
-            {"name": "Gauge1", "max_val": 100.0, "min_val": -100.0, "direction_pin": 5, "step_pin": 17},
-            {"name": "Gauge2", "max_val": 1.0, "min_val": 0.0, "direction_pin": 6, "step_pin": 22},
-            {"name": "Gauge3", "max_val": 1.0, "min_val": -1.0, "direction_pin": 13, "step_pin": 24},
-            {"name": "Gauge4", "max_val": 12000.0, "min_val": -6000.0, "direction_pin": 19, "step_pin": 27}
+            {"name": "Gauge1", "max_val": 100.0, "min_val": -100.0, "direction_pin": 22, "step_pin": 18},
+            {"name": "Gauge2", "max_val": 1.0, "min_val": 0.0, "direction_pin": 4, "step_pin": 17},
+            {"name": "Gauge3", "max_val": 1.0, "min_val": -1.0, "direction_pin": 24, "step_pin": 23},
+            {"name": "Gauge4", "max_val": 12000.0, "min_val": -6000.0, "direction_pin": 27, "step_pin": 25}
         ]
         self.gauge_map = {gauge["name"]: gauge for gauge in self.gauge_config}
         self.reset_gpio()  # Initialize and reset the board
@@ -26,10 +26,11 @@ class Gauges:
 
     def reset_gpio(self):
         self.pi.set_mode(self.RESET_PIN, pigpio.OUTPUT)
-        self.pi.write(self.RESET_PIN, 0)
         self.pi.write(self.RESET_PIN, 1)
         time.sleep(0.1)
         self.pi.write(self.RESET_PIN, 0)
+        time.sleep(0.1)
+        self.pi.write(self.RESET_PIN, 1)
 
     def calcScaleFactors(self):
         # Calculate scale factors
