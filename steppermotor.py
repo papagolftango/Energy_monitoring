@@ -21,6 +21,8 @@ class StepperMotor:
         # Set up the GPIO pins
         self.pi.set_mode(self.step_pin, pigpio.OUTPUT)
         self.pi.set_mode(self.direction_pin, pigpio.OUTPUT)
+        self.pi.set_mode(23, pigpio.OUTPUT)
+        self.pi.set_mode(24, pigpio.OUTPUT) 
         self.setup_waveform()
    
         
@@ -32,32 +34,26 @@ class StepperMotor:
                 pigpio.pulse(0, 1 << self.step_pin, 500)   # Step off for 1000 microseconds
             ])
             self.wid = self.pi.wave_create()
+            self.pi.wave_add_generic([
+                pigpio.pulse(1 << 23, 0, 500),  # Step on for 1000 microseconds
+                pigpio.pulse(0, 1 << 23, 500)   # Step off for 1000 microseconds
+            ])
+            self.wid1 = self.pi.wave_create()
+
             if self.wid < 0:
                 raise pigpio.error(f"Failed to create waveform for motor")
         except pigpio.error as e:
-            print(f"Pigpio error during waveform setup: {e}")
+            print(f"Pigpio error during waveform setup: {e}")   
         except Exception as e:
             print(f"Unexpected error during waveform setup: {e}")
 
-    def calibrate(self, max_steps):
-        try:
-            print("Calibrating motor...")
-            self.moveto(max_steps)
-            time.sleep(1)  # Wait for 1 second
-            self.moveto(-max_steps)
-            time.sleep(1)  # Wait for 1 second
-            self.is_calibrated_flag = True
-            print("Calibration complete")
-        except Exception as e:
-            print(f"Unexpected error during calibration: {e}")
 
-    def is_calibrated(self):
-        return self.is_calibrated_flag
-    
+
     def moveto(self, steps):
         try:
             direction = 1 if steps > 0 else 0
             self.pi.write(self.direction_pin, direction)
+            self.pi.write(24, direction)
 
             steps = abs(steps) 
             num_loops = abs(steps // 256)
@@ -67,6 +63,7 @@ class StepperMotor:
             self.pi.wave_chain([
                 255, 0,                       # loop start
                 self.wid,                     # transmit waveform
+                self.wid1
                 255, 1, remaining_steps, num_loops, 0  # loop end
             ])
             while self.pi.wave_tx_busy():  # Wait for the wave to finish
