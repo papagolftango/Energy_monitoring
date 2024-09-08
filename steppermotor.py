@@ -4,7 +4,6 @@ import subprocess
 
 class StepperMotor:
     MOTOR_MAX_STEPS = 200  # Example value, adjust as needed
-    
     def __init__(self, step_pin, direction_pin):
         self.step_pin = step_pin
         self.direction_pin = direction_pin
@@ -23,6 +22,11 @@ class StepperMotor:
         self.pi.set_mode(self.step_pin, pigpio.OUTPUT)
         self.pi.set_mode(self.direction_pin, pigpio.OUTPUT)
         self.setup_waveform()
+        self.pi.set_mode(17, pigpio.OUTPUT)
+        self.pi.write(17, 0)
+        self.pi.write(17, 1)
+        time.sleep(0.1)
+        self.pi.write(17, 0) 
         
     def setup_waveform(self):
         try:
