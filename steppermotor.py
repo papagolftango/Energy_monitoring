@@ -3,7 +3,7 @@ import pigpio
 import subprocess
 
 class StepperMotor:
-    MOTOR_MAX_STEPS = 200  # Example value, adjust as needed
+    MOTOR_MAX_STEPS = 6000  # Example value, adjust as needed
     def __init__(self, step_pin, direction_pin):
         self.step_pin = step_pin
         self.direction_pin = direction_pin
@@ -22,19 +22,14 @@ class StepperMotor:
         self.pi.set_mode(self.step_pin, pigpio.OUTPUT)
         self.pi.set_mode(self.direction_pin, pigpio.OUTPUT)
         self.setup_waveform()
-        self.pi.set_mode(26, pigpio.OUTPUT)
-        self.pi.write(26, 1)
-        time.sleep(0.1)
-        self.pi.write(26, 0)
-        time.sleep(0.1)
-        self.pi.write(26, 1) 
+   
         
     def setup_waveform(self):
         try:
             self.pi.wave_clear()  # Clear any existing waveforms
             self.pi.wave_add_generic([
-                pigpio.pulse(1 << self.step_pin, 0, 1000),  # Step on for 1000 microseconds
-                pigpio.pulse(0, 1 << self.step_pin, 1000)   # Step off for 1000 microseconds
+                pigpio.pulse(1 << self.step_pin, 0, 500),  # Step on for 1000 microseconds
+                pigpio.pulse(0, 1 << self.step_pin, 500)   # Step off for 1000 microseconds
             ])
             self.wid = self.pi.wave_create()
             if self.wid < 0:
@@ -72,30 +67,11 @@ class StepperMotor:
 
 # Example usage
 if __name__ == "__main__":
-    motor1 = StepperMotor(step_pin=17, direction_pin=4)
-    motor2 = StepperMotor(step_pin=18, direction_pin=22)
-    motor3 = StepperMotor(step_pin=23, direction_pin=24)
-    motor4 = StepperMotor(step_pin=26, direction_pin=27)
+    motor = StepperMotor(17, 27)
     try:
-        while True:
-            motor1.moveto(512)  # Move 512 steps forward
-            time.sleep(1)      # Wait for 1 second
-            motor1.moveto(-512) # Move 512 steps backward
-            time.sleep(1)      # Wait for 1 second
-            motor2.moveto(512)  # Move 512 steps forward
-            time.sleep(1)      # Wait for 1 second
-            motor2.moveto(-512) # Move 512 steps backward
-            time.sleep(1)      # Wait for 1 second
-            motor3.moveto(512)  # Move 512 steps forward
-            time.sleep(1)      # Wait for 1 second
-            motor3.moveto(-512) # Move 512 steps backward
-            time.sleep(1)      # Wait for 1 second
-            motor4.moveto(512)  # Move 512 steps forward
-            time.sleep(1)      # Wait for 1 second
-            motor4.moveto(-512) # Move 512 steps backward
-            time.sleep(1)      # Wait for 1 second
-
-    except KeyboardInterrupt:
-        pass
+        motor.moveto(100)
+        time.sleep(1)
+        motor.moveto(-100)
+        time.sleep(1)
     finally:
         motor.cleanup()

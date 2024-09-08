@@ -1,6 +1,6 @@
 import time
 import pigpio
-from stepper_motor import StepperMotor  # Ensure this import matches your file structure
+from steppermotor import StepperMotor  # Ensure this import matches your file structure
 
 class Gauges:
     MOTOR_MAX_STEPS = 200  # Example value, adjust as needed
