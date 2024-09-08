@@ -52,7 +52,7 @@ class StepperMotor:
             self.pi.wave_chain([
                 255, 0,                       # loop start
                 self.wid,                     # transmit waveform
-                255, num_loops, remaining_steps, 0  # loop end
+                255, 1, num_loops, remaining_steps, 0  # loop end
             ])
             while self.pi.wave_tx_busy():  # Wait for the wave to finish
                 time.sleep(0.01)
