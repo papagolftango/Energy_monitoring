@@ -84,43 +84,46 @@ class StepperMotor:
         """
         try:
             steps_list = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
-    
+
             # Sort motors by steps
-            motors_steps = sorted(enumerate(steps_list), key=lambda x: abs(x[1]))
-    
+            motors_steps = sorted(enumerate(steps_list), key=lambda x: abs(x[1]), reverse=True)
+
             wave_chain = []
-    
-            for i, (motor_id, steps) in enumerate(motors_steps):
-                motor = self.MOTOR_CONFIGS[motor_id]
-                direction = 1 if steps > 0 else 0
-                self.pi.write(motor['direction_pin'], direction)
-    
-                steps = abs(steps)
-                num_loops = steps // 256
-                remaining_steps = steps % 256
-                wave_id = self.wave_ids[motor_id]
-                if wave_id is None:
-                    raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
-    
-                # Add the waveforms for all motors in the sorted order
+
+            for i in range(len(motors_steps)):
                 wave_chain.extend([255, 0])
-                for j, (mid, _) in enumerate(motors_steps[i:]):
-                    wave_chain.append(self.wave_ids[mid])
-                wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
-    
-                # Update the motor position
-                self.positions[motor_id] += steps if direction == 1 else -steps
-    
+                for motor_id, steps in motors_steps[:len(motors_steps) - i]:
+                    motor = self.MOTOR_CONFIGS[motor_id]
+                    direction = 1 if steps > 0 else 0
+                    self.pi.write(motor['direction_pin'], direction)
+
+                    steps = abs(steps)
+                    num_loops = steps // 256
+                    remaining_steps = steps % 256
+                    wave_id = self.wave_ids[motor_id]
+                    if wave_id is None:
+                        raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
+
+                    wave_chain.append(wave_id)
+                    wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
+
+                    # Update the motor position
+                    self.positions[motor_id] += steps if direction == 1 else -steps
+
             print(f"Wave chain: {wave_chain}")
             self.pi.wave_chain(wave_chain)
-    
+
             while self.pi.wave_tx_busy():  # Wait for the wave to finish
                 time.sleep(0.01)
         except pigpio.error as e:
             print(f"Pigpio error during movement: {e}")
         except Exception as e:
-            print(f"Unexpected error during movement: {e}")
-
+            print(f"Unexpected error during movement: {e}")git config --global user.email "you@example.com"
+git config --global user.name "Your Name"git config --global user.email "you@example.com"
+git config --global user.name "Your Name"git config --global --get user.email
+git config --global --get user.namegit config --global --get user.email
+git config --global --get user.namegit config --global --get user.email
+git config --global --get user.name
     def calibrate(self, motor_id):
         """
         Calibrate a single motor by moving it to the maximum steps and then back to zero.
