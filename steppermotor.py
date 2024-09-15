@@ -7,10 +7,10 @@ import select
 class StepperMotor:
     MOTOR_MAX_STEPS = 6000  # Example value, adjust as needed
     MOTOR_CONFIGS = [
-        {"direction_pin": 5, "step_pin": 17},
-        {"direction_pin": 6, "step_pin": 23},
-        {"direction_pin": 13, "step_pin": 24},
-        {"direction_pin": 19, "step_pin": 27}
+        {"direction_pin": 4, "step_pin": 17},
+        {"direction_pin": 22, "step_pin": 18},
+        {"direction_pin": 24, "step_pin": 23},
+        {"direction_pin": 27, "step_pin": 25}
     ]
 
     def __init__(self):
