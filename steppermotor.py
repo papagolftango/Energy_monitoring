@@ -125,8 +125,6 @@ class StepperMotor:
             print(f"Pigpio error during movement: {e}")
         except Exception as e:
             print(f"Unexpected error during movement: {e}")
-    
-
     def calibrate_all(self):
         """
         Calibrate all motors simultaneously by moving them to the maximum steps and then back to zero.
