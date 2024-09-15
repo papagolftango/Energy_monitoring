@@ -1,6 +1,8 @@
 import time
 import pigpio
 import subprocess
+import sys
+import select
 
 class StepperMotor:
     MOTOR_MAX_STEPS = 6000  # Example value, adjust as needed
@@ -15,6 +17,7 @@ class StepperMotor:
         self.pi = pigpio.pi()
         self.is_calibrated_flag = False
         self.reset_pin = 26  # Global reset pin
+        self.positions = [0] * len(self.MOTOR_CONFIGS)  # Initialize motor positions
 
         # Check if pigpio daemon is running
         if not self.pi.connected:
@@ -34,10 +37,6 @@ class StepperMotor:
         self.reset()
 
         self.setup_waveform()
-
-        # Accessing the waveform ID for the second motor (index 1)
-        second_motor_waveform_id = self.wave_ids[1]
-        print(f"Waveform ID for the second motor: {second_motor_waveform_id}")
 
     def reset(self):
         """
@@ -75,25 +74,34 @@ class StepperMotor:
         ])
         return self.pi.wave_create()
 
-    def moveto(self, steps_list):
+    def moveto(self, steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3):
         """
-        Move all motors simultaneously based on the provided steps list.
-        :param steps_list: List of steps for each motor [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
+        Move all motors simultaneously based on the provided steps for each motor.
+        :param steps_motor_0: Steps for motor 0
+        :param steps_motor_1: Steps for motor 1
+        :param steps_motor_2: Steps for motor 2
+        :param steps_motor_3: Steps for motor 3
         """
         try:
-            if len(steps_list) != len(self.MOTOR_CONFIGS):
-                raise ValueError("The steps_list must have the same length as the number of motors")
+            steps_list = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
+
+            # Sort motors by steps
+            motors_steps = sorted(enumerate(steps_list), key=lambda x: abs(x[1]))
 
             wave_chain = []
+            previous_steps = 0
 
-            for motor_id, steps in enumerate(steps_list):
+            for i, (motor_id, steps) in enumerate(motors_steps):
                 motor = self.MOTOR_CONFIGS[motor_id]
                 direction = 1 if steps > 0 else 0
                 self.pi.write(motor['direction_pin'], direction)
 
                 steps = abs(steps)
-                num_loops = steps // 256
-                remaining_steps = steps % 256
+                segment_steps = steps - previous_steps
+                previous_steps = steps
+
+                num_loops = segment_steps // 256
+                remaining_steps = segment_steps % 256
                 wave_id = self.wave_ids[motor_id]
                 if wave_id is None:
                     raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
@@ -104,6 +112,9 @@ class StepperMotor:
                     255, 1, remaining_steps, num_loops, 0  # loop end
                 ])
 
+                # Update the motor position
+                self.positions[motor_id] += steps if direction == 1 else -steps
+
             self.pi.wave_chain(wave_chain)
 
             while self.pi.wave_tx_busy():  # Wait for the wave to finish
@@ -113,26 +124,79 @@ class StepperMotor:
         except Exception as e:
             print(f"Unexpected error during movement: {e}")
 
+    def calibrate(self, motor_id):
+        """
+        Calibrate a single motor by moving it to the maximum steps and then back to zero.
+        :param motor_id: The ID of the motor to calibrate
+        """
+        try:
+            if motor_id < 0 or motor_id >= len(self.MOTOR_CONFIGS):
+                raise ValueError("Invalid motor ID")
+
+            # Move the motor to the maximum steps
+            self.moveto(
+                *[self.MOTOR_MAX_STEPS if i == motor_id else 0 for i in range(len(self.MOTOR_CONFIGS))]
+            )
+
+            # Wait for the movement to complete
+            while self.pi.wave_tx_busy():
+                time.sleep(0.01)
+
+            # Move the motor back to zero
+            self.moveto(
+                *[-self.MOTOR_MAX_STEPS if i == motor_id else 0 for i in range(len(self.MOTOR_CONFIGS))]
+            )
+
+            # Wait for the movement to complete
+            while self.pi.wave_tx_busy():
+                time.sleep(0.01)
+
+            # Set the motor position to zero
+            self.positions[motor_id] = 0
+            print(f"Calibration complete for motor {motor_id}. Position set to zero.")
+        except pigpio.error as e:
+            print(f"Pigpio error during calibration of motor {motor_id}: {e}")
+        except Exception as e:
+            print(f"Unexpected error during calibration of motor {motor_id}: {e}")
+
+    def calibrate_all(self):
+        """
+        Calibrate all motors simultaneously by moving them to the maximum steps and then back to zero.
+        """
+        try:
+            # Move all motors to the maximum steps
+            self.moveto(self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS)
+
+            # Wait for the movement to complete
+            while self.pi.wave_tx_busy():
+                time.sleep(0.01)
+
+            # Move all motors back to zero
+            self.moveto(-self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS)
+
+            # Wait for the movement to complete
+            while self.pi.wave_tx_busy():
+                time.sleep(0.01)
+
+            # Set all motor positions to zero
+            self.positions = [0] * len(self.MOTOR_CONFIGS)
+            self.is_calibrated_flag = True
+            print("Calibration complete for all motors. All positions set to zero.")
+        except pigpio.error as e:
+            print(f"Pigpio error during calibration of all motors: {e}")
+        except Exception as e:
+            print(f"Unexpected error during calibration of all motors: {e}")
+
 # Test code
 if __name__ == "__main__":
     stepper_motor = StepperMotor()
-    
-    # Move all motors to MOTOR_MAX_STEPS
-    steps_list = [
-        StepperMotor.MOTOR_MAX_STEPS,  # Motor 0
-        StepperMotor.MOTOR_MAX_STEPS,  # Motor 1
-        StepperMotor.MOTOR_MAX_STEPS,  # Motor 2
-        StepperMotor.MOTOR_MAX_STEPS   # Motor 3
-    ]
-    print("Moving all motors to MOTOR_MAX_STEPS...")
-    stepper_motor.moveto(steps_list)
-    
-    # Move all motors to -MOTOR_MAX_STEPS
-    steps_list = [
-        -StepperMotor.MOTOR_MAX_STEPS,  # Motor 0
-        -StepperMotor.MOTOR_MAX_STEPS,  # Motor 1
-        -StepperMotor.MOTOR_MAX_STEPS,  # Motor 2
-        -StepperMotor.MOTOR_MAX_STEPS   # Motor 3
-    ]
-    print("Moving all motors to -MOTOR_MAX_STEPS...")
-    stepper_motor.moveto(steps_list)
+
+    print("Press any key to stop the calibration loop.")
+    while True:
+        stepper_motor.calibrate_all()
+        time.sleep(1)
+
+        # Check if a key has been pressed
+        if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+            print("Key pressed. Exiting calibration loop.")
+            break
