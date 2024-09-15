@@ -84,39 +84,36 @@ class StepperMotor:
         """
         try:
             steps_list = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
-
+    
             # Sort motors by steps
             motors_steps = sorted(enumerate(steps_list), key=lambda x: abs(x[1]))
-
+    
             wave_chain = []
-            previous_steps = 0
-
+    
             for i, (motor_id, steps) in enumerate(motors_steps):
                 motor = self.MOTOR_CONFIGS[motor_id]
                 direction = 1 if steps > 0 else 0
                 self.pi.write(motor['direction_pin'], direction)
-
+    
                 steps = abs(steps)
-                segment_steps = steps - previous_steps
-                previous_steps = steps
-
-                num_loops = segment_steps // 256
-                remaining_steps = segment_steps % 256
+                num_loops = steps // 256
+                remaining_steps = steps % 256
                 wave_id = self.wave_ids[motor_id]
                 if wave_id is None:
                     raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
-
-                wave_chain.extend([
-                    255, 0,                       # loop start
-                    wave_id,                      # transmit waveform
-                    255, 1, remaining_steps, num_loops, 0  # loop end
-                ])
-
+    
+                # Add the waveforms for all motors in the sorted order
+                wave_chain.extend([255, 0])
+                for j, (mid, _) in enumerate(motors_steps[i:]):
+                    wave_chain.append(self.wave_ids[mid])
+                wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
+    
                 # Update the motor position
                 self.positions[motor_id] += steps if direction == 1 else -steps
-
+    
+            print(f"Wave chain: {wave_chain}")
             self.pi.wave_chain(wave_chain)
-
+    
             while self.pi.wave_tx_busy():  # Wait for the wave to finish
                 time.sleep(0.01)
         except pigpio.error as e:
