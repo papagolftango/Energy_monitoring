@@ -74,7 +74,6 @@ class StepperMotor:
         ])
         return self.pi.wave_create()
 
-    
     def moveto(self, steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3):
         """
         Move all motors simultaneously based on the provided steps for each motor.
@@ -100,9 +99,9 @@ class StepperMotor:
             wave_chain.extend([255, 0])
 
             # Add all motors to the wave chain with the same number of loops and remaining steps
-            for motor_id, _ in motors_steps:
+            for motor_id, motor_steps in motors_steps:
                 motor = self.MOTOR_CONFIGS[motor_id]
-                direction = 1 if steps > 0 else 0
+                direction = 1 if motor_steps > 0 else 0
                 self.pi.write(motor['direction_pin'], direction)
 
                 wave_id = self.wave_ids[motor_id]
@@ -117,14 +116,6 @@ class StepperMotor:
             # Add loop end and repeat count to the wave chain
             wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
 
-            # If there are remaining steps for the last motor, add another loop for it
-            if len(motors_steps) > 1 and motors_steps[-1][1] > steps:
-                remaining_steps = motors_steps[-1][1] - steps
-                num_loops = remaining_steps // 256
-                remaining_steps = remaining_steps % 256
-
-                wave_chain.extend([255, 0, self.wave_ids[motors_steps[-1][0]], 255, 1, remaining_steps, num_loops, 0])
-
             print(f"Wave chain: {wave_chain}")
             self.pi.wave_chain(wave_chain)
 
@@ -134,6 +125,8 @@ class StepperMotor:
             print(f"Pigpio error during movement: {e}")
         except Exception as e:
             print(f"Unexpected error during movement: {e}")
+    
+
     def calibrate_all(self):
         """
         Calibrate all motors simultaneously by moving them to the maximum steps and then back to zero.
