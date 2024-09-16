@@ -5,11 +5,11 @@ import sys
 import select
 
 class StepperMotor:
-    MOTOR_MAX_STEPS = 6000  # Example value, adjust as needed
+    MOTOR_MAX_STEPS = 3600  # Example value, adjust as needed
     MOTOR_CONFIGS = [
         {"direction_pin": 4, "step_pin": 17},
         {"direction_pin": 22, "step_pin": 18},
-        {"direction_pin": 24, "step_pin": 23},
+        {"direction_pin": 23, "step_pin": 24},
         {"direction_pin": 27, "step_pin": 25}
     ]
 
@@ -97,7 +97,7 @@ class StepperMotor:
     
                 steps = abs(steps)
                 num_loops = steps // 256
-                remaining_steps = steps % 256
+                remaining_steps = steps % 256      
                 wave_id = self.wave_ids[motor_id]
                 if wave_id is None:
                     raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
