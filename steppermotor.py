@@ -84,78 +84,50 @@ class StepperMotor:
         """
         try:
             steps_list = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
-    
+
             # Sort motors by steps
             motors_steps = sorted(enumerate(steps_list), key=lambda x: abs(x[1]))
-    
+
             wave_chain = []
-    
-            for i, (motor_id, steps) in enumerate(motors_steps):
+
+            # Calculate the number of loops and remaining steps for the first motor
+            steps = abs(motors_steps[0][1])
+            num_loops = steps // 256
+            remaining_steps = steps % 256
+
+            # Add loop start to the wave chain
+            wave_chain.extend([255, 0])
+
+            # Add all motors to the wave chain with the same number of loops and remaining steps
+            for motor_id, motor_steps in motors_steps:
                 motor = self.MOTOR_CONFIGS[motor_id]
-                direction = 1 if steps > 0 else 0
+                direction = 1 if motor_steps > 0 else 0
                 self.pi.write(motor['direction_pin'], direction)
     
                 steps = abs(steps)
                 num_loops = steps // 256
-                remaining_steps = steps % 256      
+                remaining_steps = steps % 256
                 wave_id = self.wave_ids[motor_id]
                 if wave_id is None:
                     raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
-    
-                # Add the waveforms for all motors in the sorted order
-                wave_chain.extend([255, 0])
-                for j, (mid, _) in enumerate(motors_steps[i:]):
-                    wave_chain.append(self.wave_ids[mid])
-                wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
-    
+
+                wave_chain.append(wave_id)
+
                 # Update the motor position
                 self.positions[motor_id] += steps if direction == 1 else -steps
-    
+
+            # Add loop end and repeat count to the wave chain
+            wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
+
             print(f"Wave chain: {wave_chain}")
             self.pi.wave_chain(wave_chain)
-    
+
             while self.pi.wave_tx_busy():  # Wait for the wave to finish
                 time.sleep(0.01)
         except pigpio.error as e:
             print(f"Pigpio error during movement: {e}")
         except Exception as e:
             print(f"Unexpected error during movement: {e}")
-
-    def calibrate(self, motor_id):
-        """
-        Calibrate a single motor by moving it to the maximum steps and then back to zero.
-        :param motor_id: The ID of the motor to calibrate
-        """
-        try:
-            if motor_id < 0 or motor_id >= len(self.MOTOR_CONFIGS):
-                raise ValueError("Invalid motor ID")
-
-            # Move the motor to the maximum steps
-            self.moveto(
-                *[self.MOTOR_MAX_STEPS if i == motor_id else 0 for i in range(len(self.MOTOR_CONFIGS))]
-            )
-
-            # Wait for the movement to complete
-            while self.pi.wave_tx_busy():
-                time.sleep(0.01)
-
-            # Move the motor back to zero
-            self.moveto(
-                *[-self.MOTOR_MAX_STEPS if i == motor_id else 0 for i in range(len(self.MOTOR_CONFIGS))]
-            )
-
-            # Wait for the movement to complete
-            while self.pi.wave_tx_busy():
-                time.sleep(0.01)
-
-            # Set the motor position to zero
-            self.positions[motor_id] = 0
-            print(f"Calibration complete for motor {motor_id}. Position set to zero.")
-        except pigpio.error as e:
-            print(f"Pigpio error during calibration of motor {motor_id}: {e}")
-        except Exception as e:
-            print(f"Unexpected error during calibration of motor {motor_id}: {e}")
-
     def calibrate_all(self):
         """
         Calibrate all motors simultaneously by moving them to the maximum steps and then back to zero.
@@ -196,4 +168,4 @@ if __name__ == "__main__":
         # Check if a key has been pressed
         if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
             print("Key pressed. Exiting calibration loop.")
-            break
+            break            

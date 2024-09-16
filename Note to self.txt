@@ -1,0 +1,21 @@
+Note to self
+
+Correct max_steps to 3600
+
+Check pin assignment clkc/dirC - probably swop 24,23
+
+Print new pointers
+
+Design and print front panel
+
+Correct circuit diagram:
+     clk and dirs
+     Diodes
+
+PCB mount motors?
+
+Mark motors/connectors A,B,C,Design
+
+Soak test cal - check over/missing steps
+
+Extend test cases (?BDD with manual steps)
