@@ -165,4 +165,4 @@ if __name__ == "__main__":
         # Check if a key has been pressed
         if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
             print("Key pressed. Exiting calibration loop.")
-            break
+            break            
