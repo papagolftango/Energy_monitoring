@@ -14,7 +14,7 @@ Correct circuit diagram:
 
 PCB mount motors?
 
-Mark motors/connectors A,B,C,Design
+Mark motors/connectors A,B,C,D
 
 Soak test cal - check over/missing steps
 
