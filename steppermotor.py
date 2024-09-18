@@ -159,17 +159,33 @@ class StepperMotor:
 
     def get_max_steps(self):
         return self.MAX_MOTOR_STEPS
+    
+    def get_num_motors(self):
+        return len(self.MOTOR_CONFIGS)
 
 # Test code
 if __name__ == "__main__":
     stepper_motor = StepperMotor()
 
-    print("Press any key to stop the calibration loop.")
     while True:
+        # Calibrate all motors
         stepper_motor.calibrate_all()
-        time.sleep(1)
 
-        # Check if a key has been pressed
-        if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-            print("Key pressed. Exiting calibration loop.")
-            break            
+        # Move all motors to position 0
+        stepper_motor.moveto(0, 0, 0, 0)
+
+        # Individually move each motor 360 steps at a time until max steps is reached
+        num_motors = stepper_motor.get_num_motors()
+        for i in range(num_motors):
+            current_position = 0
+            while current_position < stepper_motor.get_max_steps():
+                # List comprehension to generate positions
+                # Move motor i to 360 steps, others to 0
+                positions = [360 if j == i else 0 for j in range(num_motors)]
+                stepper_motor.moveto(*positions)
+                current_position += 360
+            # Move motor back to 0 after reaching max steps
+            stepper_motor.moveto(0, 0, 0, 0)
+
+        # Add a delay between iterations if needed
+        time.sleep(1)
