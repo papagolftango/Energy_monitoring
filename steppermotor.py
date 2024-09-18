@@ -69,8 +69,8 @@ class StepperMotor:
 
     def create_waveform(self, pin):
         self.pi.wave_add_generic([
-            pigpio.pulse(1 << pin, 0, 500),  # Step on for 500 microseconds
-            pigpio.pulse(0, 1 << pin, 500)   # Step off for 500 microseconds
+            pigpio.pulse(1 << pin, 0, 100),  # Step on for 500 microseconds
+            pigpio.pulse(0, 1 << pin, 100)   # Step off for 500 microseconds
         ])
         return self.pi.wave_create()
 
