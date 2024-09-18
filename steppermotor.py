@@ -136,14 +136,12 @@ class StepperMotor:
         try:
             # Move all motors to the maximum steps
             self.moveto(self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS)
-
             # Wait for the movement to complete
             while self.pi.wave_tx_busy():
                 time.sleep(0.01)
 
             # Move all motors back to zero
             self.moveto(-self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS)
-
             # Wait for the movement to complete
             while self.pi.wave_tx_busy():
                 time.sleep(0.01)
@@ -156,6 +154,9 @@ class StepperMotor:
             print(f"Pigpio error during calibration of all motors: {e}")
         except Exception as e:
             print(f"Unexpected error during calibration of all motors: {e}")
+
+    def cleanup(self)
+        self.pi.stop()
 
     def get_max_steps(self):
         return self.MAX_MOTOR_STEPS
