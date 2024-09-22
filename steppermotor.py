@@ -85,28 +85,35 @@ class StepperMotor:
         try:
             steps_list = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
     
+            # Sort motors by steps and discard zero steps
+            motors_steps = sorted([(i, steps) for i, steps in enumerate(steps_list) if steps != 0], key=lambda x: abs(x[1]))
+    
             wave_chain = []
     
-            for motor_id, steps in enumerate(steps_list):
-                if steps == 0:
-                    continue  # Skip motors with zero steps
-    
+            previous_steps = 0
+            for i, (motor_id, steps) in enumerate(motors_steps):
                 motor = self.MOTOR_CONFIGS[motor_id]
                 direction = 1 if steps > 0 else 0
                 self.pi.write(motor['direction_pin'], direction)
     
                 steps = abs(steps)
-                num_loops = steps // 256
-                remaining_steps = steps % 256
+                move_steps = steps - previous_steps
+                previous_steps = steps
+    
+                num_loops = move_steps // 256
+                remaining_steps = move_steps % 256
                 wave_id = self.wave_ids[motor_id]
                 if wave_id is None:
                     raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
     
-                # Add the waveforms for the motor
-                wave_chain.extend([255, 0, wave_id, 255, 1, remaining_steps, num_loops, 0])
+                # Add the waveforms for the current motor and all subsequent motors
+                wave_chain.extend([255, 0])
+                for j, (mid, _) in enumerate(motors_steps[i:]):
+                    wave_chain.append(self.wave_ids[mid])
+                wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
     
                 # Update the motor position
-                self.positions[motor_id] += steps if direction == 1 else -steps
+                self.positions[motor_id] += move_steps if direction == 1 else -move_steps
     
             print(f"Wave chain: {wave_chain}")
             self.pi.wave_chain(wave_chain)
@@ -117,7 +124,6 @@ class StepperMotor:
             print(f"Pigpio error during movement: {e}")
         except Exception as e:
             print(f"Unexpected error during movement: {e}")
-            
     def calibrate_all(self):
         """
         Calibrate all motors simultaneously by moving them to the maximum steps and then back to zero.
