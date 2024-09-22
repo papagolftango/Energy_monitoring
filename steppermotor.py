@@ -107,10 +107,11 @@ class StepperMotor:
                     raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
     
                 # Add the waveforms for the current motor and all subsequent motors
-                wave_chain.extend([255, 0])
-                for j, (mid, _) in enumerate(motors_steps[i:]):
-                    wave_chain.append(self.wave_ids[mid])
-                wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
+                if move_steps > 0:
+                    wave_chain.extend([255, 0])
+                    for j, (mid, _) in enumerate(motors_steps[i:]):
+                        wave_chain.append(self.wave_ids[mid])
+                    wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
     
                 # Update the motor position
                 self.positions[motor_id] += move_steps if direction == 1 else -move_steps
@@ -124,6 +125,7 @@ class StepperMotor:
             print(f"Pigpio error during movement: {e}")
         except Exception as e:
             print(f"Unexpected error during movement: {e}")
+
     def calibrate_all(self):
         """
         Calibrate all motors simultaneously by moving them to the maximum steps and then back to zero.
