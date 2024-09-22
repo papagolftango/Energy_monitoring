@@ -85,12 +85,9 @@ class StepperMotor:
         try:
             steps_list = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
     
-            # Sort motors by steps
-            motors_steps = sorted(enumerate(steps_list), key=lambda x: abs(x[1]))
-    
             wave_chain = []
     
-            for i, (motor_id, steps) in enumerate(motors_steps):
+            for motor_id, steps in enumerate(steps_list):
                 if steps == 0:
                     continue  # Skip motors with zero steps
     
@@ -105,12 +102,8 @@ class StepperMotor:
                 if wave_id is None:
                     raise pigpio.error(f"Waveform ID for motor {motor_id} is None")
     
-                # Add the waveforms for all motors in the sorted order
-                wave_chain.extend([255, 0])
-                for j, (mid, _) in enumerate(motors_steps[i:]):
-                    if steps_list[mid] != 0:
-                        wave_chain.append(self.wave_ids[mid])
-                wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
+                # Add the waveforms for the motor
+                wave_chain.extend([255, 0, wave_id, 255, 1, remaining_steps, num_loops, 0])
     
                 # Update the motor position
                 self.positions[motor_id] += steps if direction == 1 else -steps
@@ -151,11 +144,11 @@ class StepperMotor:
         except Exception as e:
             print(f"Unexpected error during calibration of all motors: {e}")
 
-    def cleanup(self)
+    def cleanup(self):
         self.pi.stop()
 
     def get_max_steps(self):
-        return self.MAX_MOTOR_STEPS
+        return self.MOTOR_MAX_STEPS
     
     def get_num_motors(self):
         return len(self.MOTOR_CONFIGS)
