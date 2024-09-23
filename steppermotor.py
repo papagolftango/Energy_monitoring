@@ -83,13 +83,19 @@ class StepperMotor:
         :param steps_motor_3: Steps for motor 3
         """
         try:
-            steps_list = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
-    
+            target_positions = [target_motor_0, target_motor_1, target_motor_2, target_motor_3]
+            steps_list = []
+
+            # Calculate relative movement for each motor
+            for i, target in enumerate(target_positions):
+                current_position = self.current_positions[i]
+                steps = target - current_position
+                steps_list.append(steps)
+
             # Sort motors by steps and discard zero steps
             motors_steps = sorted([(i, steps) for i, steps in enumerate(steps_list) if steps != 0], key=lambda x: abs(x[1]))
-    
-            wave_chain = []
-    
+
+            wave_chain = []    
             previous_steps = 0
             for i, (motor_id, steps) in enumerate(motors_steps):
                 motor = self.MOTOR_CONFIGS[motor_id]

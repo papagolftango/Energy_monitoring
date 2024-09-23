@@ -3,7 +3,7 @@ import pigpio
 from steppermotor import StepperMotor  # Ensure this import matches your file structure
 
 class Gauges:
-
+ 
     def __init__(self):
         self.stepper = StepperMotor()
         self.Max_Motor_Steps = self.stepper.get_max_steps()
