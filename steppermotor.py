@@ -88,9 +88,12 @@ class StepperMotor:
 
             # Calculate relative movement for each motor ie demand - curren_position
             for i, target in enumerate(target_positions):
-                current_position = self.current_positions[i]
+                current_position = self.positions[i]
                 steps = target - current_position
                 steps_list.append(steps)
+                 # Update the motor position
+                self.positions[motor_id] = target  
+
 
             # Sort motors by steps (lowest 1st) and discard those with no steps required
             motors_steps = sorted([(i, steps) for i, steps in enumerate(steps_list) if steps != 0], key=lambda x: abs(x[1]))
@@ -119,8 +122,7 @@ class StepperMotor:
                         wave_chain.append(self.wave_ids[mid])
                     wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
     
-                # Update the motor position
-                self.positions[motor_id] += move_steps if direction == 1 else -move_steps
+             
     
             print(f"Wave chain: {wave_chain}")
             self.pi.wave_chain(wave_chain)
