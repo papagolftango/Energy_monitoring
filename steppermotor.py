@@ -92,7 +92,7 @@ class StepperMotor:
                 steps = target - current_position
                 steps_list.append(steps)
                  # Update the motor position
-                self.positions[motor_id] = target  
+                self.positions[i] = target  
 
 
             # Sort motors by steps (lowest 1st) and discard those with no steps required
