@@ -86,13 +86,13 @@ class StepperMotor:
             target_positions = [target_motor_0, target_motor_1, target_motor_2, target_motor_3]
             steps_list = []
 
-            # Calculate relative movement for each motor
+            # Calculate relative movement for each motor ie demand - curren_position
             for i, target in enumerate(target_positions):
                 current_position = self.current_positions[i]
                 steps = target - current_position
                 steps_list.append(steps)
 
-            # Sort motors by steps and discard zero steps
+            # Sort motors by steps (lowest 1st) and discard those with no steps required
             motors_steps = sorted([(i, steps) for i, steps in enumerate(steps_list) if steps != 0], key=lambda x: abs(x[1]))
 
             wave_chain = []    
@@ -169,27 +169,34 @@ class StepperMotor:
 
 # Test code
 if __name__ == "__main__":
+    from steppermotor import StepperMotor
+
     stepper_motor = StepperMotor()
 
+    # Calibrate all motors
+    stepper_motor.calibrate_all()
+
     while True:
-        # Calibrate all motors
-        stepper_motor.calibrate_all()
+        try:
+            # Wait for user input
+            input_str = input("Enter target positions for motors 0, 1, 2, 3 (comma-separated): ")
+            positions = input_str.split(',')
 
-        # Move all motors to position 0
-        stepper_motor.moveto(0, 0, 0, 0)
+            if len(positions) != 4:
+                print("Invalid input. Please enter exactly four comma-separated values.")
+                continue
 
-        # Individually move each motor 360 steps at a time until max steps is reached
-        num_motors = stepper_motor.get_num_motors()
-        for i in range(num_motors):
-            current_position = 0
-            while current_position < stepper_motor.get_max_steps():
-                # List comprehension to generate positions
-                # Move motor i to 360 steps, others to 0
-                positions = [360 if j == i else 0 for j in range(num_motors)]
-                stepper_motor.moveto(*positions)
-                current_position += 360
-            # Move motor back to 0 after reaching max steps
-            stepper_motor.moveto(0, 0, 0, 0)
+            # Convert input to integers
+            w, x, y, z = map(int, positions)
 
-        # Add a delay between iterations if needed
-        time.sleep(1)
+            # Move motors to the specified positions
+            stepper_motor.moveto(w, x, y, z)
+
+            # Print current positions
+            print(f"Current positions: {stepper_motor.current_positions}")
+
+        except ValueError:
+            print("Invalid input. Please enter integer values.")
+        except KeyboardInterrupt:
+            print("Exiting...")
+            break 
