@@ -158,6 +158,19 @@ class StepperMotor:
         except Exception as e:
             print(f"Unexpected error during calibration of all motors: {e}")
 
+    
+
+class StepperMotor:
+    # Existing methods...
+
+    def get_positions(self):
+        """
+        Get the current positions of all motors.
+        :return: List of current positions for each motor.
+        """
+        return self.positions
+
+    # Existing methods...
     def cleanup(self):
         self.pi.stop()
 
@@ -169,12 +182,11 @@ class StepperMotor:
 
 # Test code
 if __name__ == "__main__":
-    from steppermotor import StepperMotor
-
     stepper_motor = StepperMotor()
 
-    # Calibrate all motors
-    stepper_motor.calibrate_all()
+    while True:
+        # Calibrate all motors
+        stepper_motor.calibrate_all()
 
         # Move all motors to position 0
         stepper_motor.moveto(0, 0, 0, 0)
@@ -189,8 +201,9 @@ if __name__ == "__main__":
                 positions = [360 if j == i else 0 for j in range(num_motors)]
                 stepper_motor.moveto(*positions)
                 current_position += 360
+                time.sleep(1)
             # Move motor back to 0 after reaching max steps
             stepper_motor.moveto(0, 0, 0, 0)
-
+            time.sleep(1)
         # Add a delay between iterations if needed
         time.sleep(1)
