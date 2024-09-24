@@ -160,9 +160,6 @@ class StepperMotor:
 
     
 
-class StepperMotor:
-    # Existing methods...
-
     def get_positions(self):
         """
         Get the current positions of all motors.
