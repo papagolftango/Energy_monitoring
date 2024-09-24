@@ -179,28 +179,33 @@ class StepperMotor:
 
 # Test code
 if __name__ == "__main__":
+     
     stepper_motor = StepperMotor()
 
+    # Calibrate all motors
+    stepper_motor.calibrate_all()
+
     while True:
-        # Calibrate all motors
-        stepper_motor.calibrate_all()
+        try:
+            # Prompt the user for input of four numbers
+            user_input = input("Enter four numbers separated by spaces (e.g., 100 200 300 400): ")
+            steps = list(map(int, user_input.split()))
 
-        # Move all motors to position 0
-        stepper_motor.moveto(0, 0, 0, 0)
+            if len(steps) != 4:
+                print("Please enter exactly four numbers.")
+                continue
 
-        # Individually move each motor 360 steps at a time until max steps is reached
-        num_motors = stepper_motor.get_num_motors()
-        for i in range(num_motors):
-            current_position = 0
-            while current_position < stepper_motor.get_max_steps():
-                # List comprehension to generate positions
-                # Move motor i to 360 steps, others to 0
-                positions = [360 if j == i else 0 for j in range(num_motors)]
-                stepper_motor.moveto(*positions)
-                current_position += 360
-                time.sleep(1)
-            # Move motor back to 0 after reaching max steps
-            stepper_motor.moveto(0, 0, 0, 0)
+            # Move motors to the specified positions
+            stepper_motor.moveto(*steps)
+
+            # Print current positions
+            print(f"Current positions: {stepper_motor.get_positions()}")
+
+            # Add a delay between iterations if needed
             time.sleep(1)
-        # Add a delay between iterations if needed
-        time.sleep(1)
+
+        except ValueError:
+            print("Invalid input. Please enter four valid integers.")
+        except KeyboardInterrupt:
+            print("Exiting...")
+            break
