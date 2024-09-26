@@ -5,7 +5,7 @@ import sys
 import select
 
 class StepperMotor:
-    MOTOR_MAX_STEPS = 3600  # Example value, adjust as needed
+    MOTOR_MAX_STEPS = 300 * 12  # Example value, adjust as needed
     MOTOR_CONFIGS = [
         {"direction_pin": 4, "step_pin": 17},
         {"direction_pin": 22, "step_pin": 18},
@@ -86,7 +86,7 @@ class StepperMotor:
             target_positions = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
             steps_list = []
 
-            # Calculate relative movement for each motor ie demand - curren_position
+            # Calculate relative movement for each motor ie demand - current_position
             for i, target in enumerate(target_positions):
                 current_position = self.positions[i]
                 steps = target - current_position
@@ -140,13 +140,13 @@ class StepperMotor:
         """
         try:
             # Move all motors to the maximum steps
-            self.moveto(self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS)
+            self.moveto(4000, 4000, 4000, 4000)
             # Wait for the movement to complete
             while self.pi.wave_tx_busy():
                 time.sleep(0.01)
 
             # Move all motors back to zero
-            self.moveto(-self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS)
+            self.moveto(0, 0, 0, 0)
             # Wait for the movement to complete
             while self.pi.wave_tx_busy():
                 time.sleep(0.01)
