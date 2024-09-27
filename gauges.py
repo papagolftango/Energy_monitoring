@@ -9,17 +9,14 @@ class Gauges:
         self.Max_Motor_Steps = self.stepper.get_max_steps()
  
         self.gauge_config = [
-            {"name": "Gauge1", "max_val": 100.0, "min_val": -100.0,  "scale": 1.0, "pos" : min_val},
-            {"name": "Gauge2", "max_val": 1.0,   "min_val": 0.0,     "scale": 1.0, "pos" : min_val},
-            {"name": "Gauge3", "max_val": 1.0,    "min_val": -1.0,   "scale": 1.0, "pos" : min_val},
-            {"name": "Gauge4", "max_val": 12000.0,"min_val": -6000.0,"scale": 1.0, "pos" : min_val}
+                {"name": "Gauge1", "min_val": -100.0, "max_val": 100.0,  "scale": 1.0, "pos": min_val},
+                {"name": "Gauge2", "min_val": 0.0,    "max_val": 1.0,    "scale": 1.0, "pos": min_val},
+                {"name": "Gauge3", "min_val": 0,      "max_val": 100.0   "scale": 1.0, "pos": min_val},
+                {"name": "Gauge4", "min_val": -2000.0,"max_val": 1000.0, "scale": 1.0, "pos": min_val}
         ]
         self.gauge_map = {gauge["name"]: gauge for gauge in self.gauge_config}
-
         # Calculate scale factors
         self.calcScaleFactors()
-        self.setup_gauges()
-        self.calibrate_all_gauges()  # Calibrate all gauges during initialization
 
     def calcScaleFactors(self):
         # Calculate scale factors
@@ -27,29 +24,31 @@ class Gauges:
             gauge["scale_factor"] = self.MOTOR_MAX_STEPS / (gauge["max_val"] - gauge["min_val"])
             print(f"Scale factor for {gauge['name']}: {gauge['scale_factor']}")
 
-    def calibrate_all_gauges:
-        self.stepper.calibrate_all()
-
     def cleanup(self):
         self.stepper.cleanup()
 
-    def move_gauge(self, w,x,y,z):
-        values = [w, x, y, z]
-        scaled_values = []
+   
+def move_gauge(self, gauge_index, value):
+        """
+        Move a single gauge to the specified value.
+        :param gauge_index: Index of the gauge to move (0 to 3)
+        :param value: Value to move the gauge to
+        """
+        if gauge_index < 0 or gauge_index >= len(self.gauge_config):
+            raise ValueError("Invalid gauge index")
 
-        for i, value in enumerate(values):
-            gauge = self.gauge_config[i]
-            scale_factor = gauge["scale_factor"]
-            # Apply scaling
-            scaled_value = value * scale_factor
-            # Set to limits if out of range
-            scaled_value = max(min(scaled_value, gauge["max_val"]), gauge["min_val"])
-            # Append scaled value to list
-            scaled_values.append(scaled_value)
-            # Update current position
-            gauge["current_position"] = scaled_value    # set to limits if out of range
+        gauge = self.gauge_config[gauge_index]
+        scale_factor = gauge["scale_factor"]
+        # Apply scaling to convert value to steps
+        steps = (value - gauge["min_val"]) * scale_factor
+        # Saturate steps to max or zero
+        steps = max(0, min(steps, self.Max_Motor_Steps))
+        # Update current position in steps
+        gauge["pos"] = steps
 
-        self.stepper.moveto(*scaled_values)
+        # Move the stepper motor to the new position
+        self.stepper.moveto(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)])
+
 
 
     def get_all_gauges_status(self):
@@ -66,9 +65,15 @@ class Gauges:
 if __name__ == "__main__":
     gauges = Gauges()
     try:
-        # Example of moving a specific gauge by name
-        gauges.move_gauge("Gauge1", 100)
-        time.sleep(1)
-        gauges.move_gauge("Gauge1", -100)
+        while True:
+            gauge_id = int(input("Enter gauge ID (0-3): "))
+            pos = float(input("Enter position: "))
+            gauges.move_gauge(gauge_id, pos)
+            print(f"Moved gauge {gauge_id} to position {pos}")
+            print("Current gauge statuses:")
+            for status in gauges.get_all_gauges_status():
+                print(status)
+    except KeyboardInterrupt:
+        print("Exiting...")
     finally:
         gauges.cleanup()

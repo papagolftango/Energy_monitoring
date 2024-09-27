@@ -5,7 +5,7 @@ import sys
 import select
 
 class StepperMotor:
-    MOTOR_MAX_STEPS = 300 * 12  # Example value, adjust as needed
+    MOTOR_MAX_STEPS = 3600  # Example value, adjust as needed
     MOTOR_CONFIGS = [
         {"direction_pin": 4, "step_pin": 17},
         {"direction_pin": 22, "step_pin": 18},
@@ -69,8 +69,8 @@ class StepperMotor:
 
     def create_waveform(self, pin):
         self.pi.wave_add_generic([
-            pigpio.pulse(1 << pin, 0, 250),  # Step on for 500 microseconds
-            pigpio.pulse(0, 1 << pin, 250)   # Step off for 500 microseconds
+            pigpio.pulse(1 << pin, 0, 100),  # Step on for 500 microseconds
+            pigpio.pulse(0, 1 << pin, 100)   # Step off for 500 microseconds
         ])
         return self.pi.wave_create()
 
@@ -83,17 +83,20 @@ class StepperMotor:
         :param steps_motor_3: Steps for motor 3
         """
         try:
-            target_positions = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
+            # Saturate input steps to max or zero
+            steps_motor_0 = max(0, min(steps_motor_0, self.MAX_STEPS))
+            steps_motor_1 = max(0, min(steps_motor_1, self.MAX_STEPS))
+            steps_motor_2 = max(0, min(steps_motor_2, self.MAX_STEPS))
+            steps_motor_3 = max(0, min(steps_motor_3, self.MAX_STEPS))
+            
+            target_positions = [target_motor_0, target_motor_1, target_motor_2, target_motor_3]
             steps_list = []
 
-            # Calculate relative movement for each motor ie demand - current_position
+            # Calculate relative movement for each motor ie demand - curren_position
             for i, target in enumerate(target_positions):
-                current_position = self.positions[i]
+                current_position = self.current_positions[i]
                 steps = target - current_position
                 steps_list.append(steps)
-                 # Update the motor position
-                self.positions[i] = target  
-
 
             # Sort motors by steps (lowest 1st) and discard those with no steps required
             motors_steps = sorted([(i, steps) for i, steps in enumerate(steps_list) if steps != 0], key=lambda x: abs(x[1]))
@@ -122,7 +125,8 @@ class StepperMotor:
                         wave_chain.append(self.wave_ids[mid])
                     wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
     
-             
+                # Update the motor position
+                self.positions[motor_id] += move_steps if direction == 1 else -move_steps
     
             print(f"Wave chain: {wave_chain}")
             self.pi.wave_chain(wave_chain)
@@ -140,13 +144,13 @@ class StepperMotor:
         """
         try:
             # Move all motors to the maximum steps
-            self.moveto(4000, 4000, 4000, 4000)
+            self.moveto(self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS)
             # Wait for the movement to complete
             while self.pi.wave_tx_busy():
                 time.sleep(0.01)
 
             # Move all motors back to zero
-            self.moveto(0, 0, 0, 0)
+            self.moveto(-self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS)
             # Wait for the movement to complete
             while self.pi.wave_tx_busy():
                 time.sleep(0.01)
@@ -160,16 +164,6 @@ class StepperMotor:
         except Exception as e:
             print(f"Unexpected error during calibration of all motors: {e}")
 
-    
-
-    def get_positions(self):
-        """
-        Get the current positions of all motors.
-        :return: List of current positions for each motor.
-        """
-        return self.positions
-
-    # Existing methods...
     def cleanup(self):
         self.pi.stop()
 
@@ -181,7 +175,8 @@ class StepperMotor:
 
 # Test code
 if __name__ == "__main__":
-     
+    from steppermotor import StepperMotor
+
     stepper_motor = StepperMotor()
 
     # Calibrate all motors
@@ -189,25 +184,25 @@ if __name__ == "__main__":
 
     while True:
         try:
-            # Prompt the user for input of four numbers
-            user_input = input("Enter four numbers separated by spaces (e.g., 100 200 300 400): ")
-            steps = list(map(int, user_input.split()))
+            # Wait for user input
+            input_str = input("Enter target positions for motors 0, 1, 2, 3 (comma-separated): ")
+            positions = input_str.split(',')
 
-            if len(steps) != 4:
-                print("Please enter exactly four numbers.")
+            if len(positions) != 4:
+                print("Invalid input. Please enter exactly four comma-separated values.")
                 continue
 
+            # Convert input to integers
+            w, x, y, z = map(int, positions)
+
             # Move motors to the specified positions
-            stepper_motor.moveto(*steps)
+            stepper_motor.moveto(w, x, y, z)
 
             # Print current positions
-            print(f"Current positions: {stepper_motor.get_positions()}")
-
-            # Add a delay between iterations if needed
-            time.sleep(1)
+            print(f"Current positions: {stepper_motor.current_positions}")
 
         except ValueError:
-            print("Invalid input. Please enter four valid integers.")
+            print("Invalid input. Please enter integer values.")
         except KeyboardInterrupt:
             print("Exiting...")
-            break
+            break 
