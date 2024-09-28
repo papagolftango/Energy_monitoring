@@ -47,11 +47,10 @@ class Gauges:
         steps = max(0, min(steps, self.MOTOR_MAX_STEPS))
         # Update current position in steps
         gauge["pos"] = steps
-
+        print(gauge_index, value))
+        print(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)])
         # Move the stepper motor to the new position
-        self.stepper.moveto(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)])
-
-
+        self.stepper.moveto(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)]))
 
     def get_all_gauges_status(self):
         status_list = []
