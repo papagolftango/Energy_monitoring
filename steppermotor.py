@@ -84,10 +84,10 @@ class StepperMotor:
         """
         try:
             # Saturate input steps to max or zero
-            steps_motor_0 = max(0, min(steps_motor_0, self.MAX_STEPS))
-            steps_motor_1 = max(0, min(steps_motor_1, self.MAX_STEPS))
-            steps_motor_2 = max(0, min(steps_motor_2, self.MAX_STEPS))
-            steps_motor_3 = max(0, min(steps_motor_3, self.MAX_STEPS))
+            steps_motor_0 = max(0, min(steps_motor_0, self.MOTOR_MAX_STEPS))
+            steps_motor_1 = max(0, min(steps_motor_1, self.MOTOR_MAX_STEPS))
+            steps_motor_2 = max(0, min(steps_motor_2, self.MOTOR_MAX_STEPS))
+            steps_motor_3 = max(0, min(steps_motor_3, self.MOTOR_MAX_STEPS))
             
             target_positions = [target_motor_0, target_motor_1, target_motor_2, target_motor_3]
             steps_list = []
