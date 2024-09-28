@@ -6,7 +6,7 @@ class Gauges:
  
     def __init__(self):
         self.stepper = StepperMotor()
-        self.Max_Motor_Steps = self.stepper.get_max_steps()
+        self.Max_MOTOR_MAX_STEPS = self.stepper.get_max_steps()
  
         self.gauge_config = [
                 {"name": "Gauge1", "min_val": -100.0, "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
