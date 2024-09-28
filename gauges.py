@@ -7,7 +7,8 @@ class Gauges:
     def __init__(self):
         self.stepper = StepperMotor()
         self.MOTOR_MAX_STEPS = self.stepper.get_max_steps()
- 
+        self.stepper.calibrate_all()
+
         self.gauge_config = [
                 {"name": "Gauge1", "min_val": -100.0, "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
                 {"name": "Gauge2", "min_val": 0.0,    "max_val": 1.0,    "scale": 1.0, "pos": 0.0},
@@ -41,7 +42,7 @@ class Gauges:
         gauge = self.gauge_config[gauge_index]
         scale_factor = gauge["scale_factor"]
         # Apply scaling to convert value to steps
-        steps = (value - gauge["min_val"]) * scale_factor
+        steps = int((value - gauge["min_val"]) * scale_factor)
         # Saturate steps to max or zero
         steps = max(0, min(steps, self.MOTOR_MAX_STEPS))
         # Update current position in steps
