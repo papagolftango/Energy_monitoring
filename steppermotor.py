@@ -109,6 +109,8 @@ class StepperMotor:
                 motor = self.MOTOR_CONFIGS[motor_id]
                 direction = 1 if steps > 0 else 0
                 self.pi.write(motor['direction_pin'], direction)
+                # Update the motor position
+                self.positions[motor_id] = steps
     
                 steps = abs(steps)
                 move_steps = steps - previous_steps
