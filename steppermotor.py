@@ -89,7 +89,7 @@ class StepperMotor:
             steps_motor_2 = max(0, min(steps_motor_2, self.MOTOR_MAX_STEPS))
             steps_motor_3 = max(0, min(steps_motor_3, self.MOTOR_MAX_STEPS))
             
-            target_positions = [target_motor_0, target_motor_1, target_motor_2, target_motor_3]
+            target_positions = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
             steps_list = []
 
             # Calculate relative movement for each motor ie demand - curren_position

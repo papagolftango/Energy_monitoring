@@ -57,7 +57,7 @@ class Gauges:
         for gauge in self.gauge_config:
             status_list.append({
                 "name":     gauge["name"],
-                "position": gauge["pos],
+                "position": gauge["pos"]
             })
         return status_list
     
