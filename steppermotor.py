@@ -94,7 +94,7 @@ class StepperMotor:
 
             # Calculate relative movement for each motor ie demand - curren_position
             for i, target in enumerate(target_positions):
-                current_position = self.current_positions[i]
+                current_position = self.positions[i]
                 steps = target - current_position
                 steps_list.append(steps)
 
@@ -199,7 +199,7 @@ if __name__ == "__main__":
             stepper_motor.moveto(w, x, y, z)
 
             # Print current positions
-            print(f"Current positions: {stepper_motor.current_positions}")
+            print(f"Current positions: {stepper_motor.positions}")
 
         except ValueError:
             print("Invalid input. Please enter integer values.")
