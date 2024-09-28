@@ -54,11 +54,10 @@ class Gauges:
 
     def get_all_gauges_status(self):
         status_list = []
-        for gauge in self.motor_config:
+        for gauge in self.gauge_config:
             status_list.append({
                 "name":     gauge["name"],
-                "position": gauge["current_position"],
-                "range":    gauge["range"]
+                "position": gauge["pos],
             })
         return status_list
     
