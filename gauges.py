@@ -9,10 +9,10 @@ class Gauges:
         self.Max_Motor_Steps = self.stepper.get_max_steps()
  
         self.gauge_config = [
-                {"name": "Gauge1", "min_val": -100.0, "max_val": 100.0,  "scale": 1.0, "pos": min_val},
-                {"name": "Gauge2", "min_val": 0.0,    "max_val": 1.0,    "scale": 1.0, "pos": min_val},
-                {"name": "Gauge3", "min_val": 0,      "max_val": 100.0   "scale": 1.0, "pos": min_val},
-                {"name": "Gauge4", "min_val": -2000.0,"max_val": 1000.0, "scale": 1.0, "pos": min_val}
+                {"name": "Gauge1", "min_val": -100.0, "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
+                {"name": "Gauge2", "min_val": 0.0,    "max_val": 1.0,    "scale": 1.0, "pos": 0.0},
+                {"name": "Gauge3", "min_val": 0,      "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
+                {"name": "Gauge4", "min_val": -2000.0,"max_val": 1000.0, "scale": 1.0, "pos": 0.0}
         ]
         self.gauge_map = {gauge["name"]: gauge for gauge in self.gauge_config}
         # Calculate scale factors
@@ -22,13 +22,14 @@ class Gauges:
         # Calculate scale factors
         for gauge in self.gauge_config:
             gauge["scale_factor"] = self.MOTOR_MAX_STEPS / (gauge["max_val"] - gauge["min_val"])
+            gauge["pos:"] = gauge["min_val"]    
             print(f"Scale factor for {gauge['name']}: {gauge['scale_factor']}")
 
     def cleanup(self):
         self.stepper.cleanup()
 
    
-def move_gauge(self, gauge_index, value):
+    def move_gauge(self, gauge_index, value):
         """
         Move a single gauge to the specified value.
         :param gauge_index: Index of the gauge to move (0 to 3)
