@@ -54,10 +54,11 @@ class Gauges:
 
     def get_all_gauges_status(self):
         status_list = []
-        for gauge in self.gauge_config:
+        for i, gauge in self.gauge_config:
             status_list.append({
                 "name":     gauge["name"],
-                "position": gauge["pos"]
+                "position": gauge["pos"],
+                "steps":    self.stepper.get_steps(i)  
             })
         return status_list
     

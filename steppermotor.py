@@ -173,6 +173,17 @@ class StepperMotor:
     
     def get_num_motors(self):
         return len(self.MOTOR_CONFIGS)
+    
+    def get_steps(self, motor_index):
+        """
+        Get the current steps for the specified motor.
+        :param motor_index: Index of the motor (0 to 3)
+        :return: Current steps for the motor
+        """
+        if 0 <= motor_index < len(self.positions):
+            return self.positions[motor_index]
+        else:
+            raise ValueError(f"Motor index '{motor_index}' is out of range")
 
 # Test code
 if __name__ == "__main__":
