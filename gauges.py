@@ -45,8 +45,8 @@ class Gauges:
         steps = int((value - gauge["min_val"]) * scale_factor)
 
         # Update current position in steps
-        gauge["pos"] = steps
-        print(gauge_index, value)
+        gauge["pos"] = value
+        print(gauge_index, value, steps)
         print(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)])
         # Move the stepper motor to the new position
         self.stepper.move(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)])
