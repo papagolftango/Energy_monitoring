@@ -74,7 +74,7 @@ class StepperMotor:
         ])
         return self.pi.wave_create()
 
-    def moveto(self, steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3):
+    def move(self, steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3):
         """
         Move all motors simultaneously based on the provided steps for each motor.
         :param steps_motor_0: Steps for motor 0
@@ -97,7 +97,7 @@ class StepperMotor:
             # Calculate relative movement for each motor ie demand - curren_position
             for i, target in enumerate(target_positions):
                 current_position = self.positions[i]
-                steps = target - current_position
+                steps = target
                 steps_list.append(steps)
 
             # Sort motors by steps (lowest 1st) and discard those with no steps required
@@ -129,9 +129,6 @@ class StepperMotor:
                         wave_chain.append(self.wave_ids[mid])
                     wave_chain.extend([255, 1, remaining_steps, num_loops, 0])
     
-                # Update the motor position
-                self.positions[motor_id] += move_steps if direction == 1 else -move_steps
-    
             print(f"Wave chain: {wave_chain}")
             self.pi.wave_chain(wave_chain)
     
@@ -148,13 +145,13 @@ class StepperMotor:
         """
         try:
             # Move all motors to the maximum steps
-            self.moveto(self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS)
+            self.move(self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS, self.MOTOR_MAX_STEPS)
             # Wait for the movement to complete
             while self.pi.wave_tx_busy():
                 time.sleep(0.01)
 
             # Move all motors back to zero
-            self.moveto(-self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS)
+            self.move(-self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS, -self.MOTOR_MAX_STEPS)
             # Wait for the movement to complete
             while self.pi.wave_tx_busy():
                 time.sleep(0.01)
@@ -200,7 +197,7 @@ if __name__ == "__main__":
             w, x, y, z = map(int, positions)
 
             # Move motors to the specified positions
-            stepper_motor.moveto(w, x, y, z)
+            stepper_motor.move(w, x, y, z)
 
             # Print current positions
             print(f"Current positions: {stepper_motor.positions}")
