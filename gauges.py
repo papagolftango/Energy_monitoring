@@ -42,23 +42,21 @@ class Gauges:
         gauge = self.gauge_config[gauge_index]
         scale_factor = gauge["scale_factor"]
         # Apply scaling to convert value to steps
-        steps = int((value - gauge["pos"]) * scale_factor)
-        # Saturate steps to max or zero
-        steps = max(0, min(steps, self.MOTOR_MAX_STEPS))
+        steps = int((value - gauge["min_val"]) * scale_factor)
+
         # Update current position in steps
-        gauge["pos"] = value
-        print(gauge_index, value))
-        print(*[steps if i == gauge_index else 0 for i, gauge in enumerate(self.gauge_config)])
+        gauge["pos"] = steps
+        print(gauge_index, value)
+        print(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)])
         # Move the stepper motor to the new position
-        self.stepper.move(*[steps if i == gauge_index else 0 for i, gauge in enumerate(self.gauge_config)]))
+        self.stepper.moveto(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)])
 
     def get_all_gauges_status(self):
         status_list = []
-        for i, gauge in self.gauge_config:
+        for gauge in self.gauge_config:
             status_list.append({
                 "name":     gauge["name"],
-                "position": gauge["pos"],
-                "steps":    self.stepper.get_steps(i)  
+                "position": gauge["pos"]
             })
         return status_list
     

@@ -82,13 +82,7 @@ class StepperMotor:
         :param steps_motor_2: Steps for motor 2
         :param steps_motor_3: Steps for motor 3
         """
-        try:
-            # Saturate input steps to max or zero
-            steps_motor_0 = max(0, min(steps_motor_0, self.MOTOR_MAX_STEPS))
-            steps_motor_1 = max(0, min(steps_motor_1, self.MOTOR_MAX_STEPS))
-            steps_motor_2 = max(0, min(steps_motor_2, self.MOTOR_MAX_STEPS))
-            steps_motor_3 = max(0, min(steps_motor_3, self.MOTOR_MAX_STEPS))
-            
+        try:   
             print(steps_motor_0,steps_motor_1,steps_motor_2,steps_motor_3)
             
             target_positions = [steps_motor_0, steps_motor_1, steps_motor_2, steps_motor_3]
@@ -105,7 +99,7 @@ class StepperMotor:
 
             wave_chain = []    
             previous_steps = 0
-            for i, (motor_id, steps) in enumerate(motors_steps):
+            for i, (motor_id, steps) in enumerate(motors_steps):c
                 motor = self.MOTOR_CONFIGS[motor_id]
                 direction = 1 if steps > 0 else 0
                 self.pi.write(motor['direction_pin'], direction)
