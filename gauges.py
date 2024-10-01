@@ -42,7 +42,7 @@ class Gauges:
         gauge = self.gauge_config[gauge_index]
         scale_factor = gauge["scale_factor"]
         # Apply scaling to convert value to steps
-        steps = int((value - gauge["min_val"]) * scale_factor)
+        steps = int(((value - gauge["pos"])- gauge["min_val"]) * scale_factor)
 
         # Update current position in steps
         gauge["pos"] = value
