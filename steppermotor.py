@@ -99,7 +99,7 @@ class StepperMotor:
 
             wave_chain = []    
             previous_steps = 0
-            for i, (motor_id, steps) in enumerate(motors_steps):c
+            for i, (motor_id, steps) in enumerate(motors_steps)
                 motor = self.MOTOR_CONFIGS[motor_id]
                 direction = 1 if steps > 0 else 0
                 self.pi.write(motor['direction_pin'], direction)
