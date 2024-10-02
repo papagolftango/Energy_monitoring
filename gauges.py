@@ -45,12 +45,13 @@ class Gauges:
 
         gauge = self.gauge_config[gauge_index]
         scale_factor = gauge["scale_factor"]
+
         # Apply scaling to convert value to steps
         steps = int((value - gauge["pos"]) * scale_factor)
-
+        logging.debug(f"Gauge {gauge_index}: Value={value}, Steps={steps}, Current position={gauge['pos']}")
         # Update current position in steps
         gauge["pos"] = value
-        logging.debug(f"Gauge {gauge_index}: Value={value}, Steps={steps}")
+    
         logging.debug(f"Steps for all gauges: {[steps if i == gauge_index else 0 for i, gauge in enumerate(self.gauge_config)]}")
         # Move the stepper motor to the new position
         self.stepper.move(*[steps if i == gauge_index else 0 for i, gauge in enumerate(self.gauge_config)])
