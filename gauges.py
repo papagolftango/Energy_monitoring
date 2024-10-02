@@ -1,6 +1,11 @@
 import time
 import pigpio
 from steppermotor import StepperMotor  # Ensure this import matches your file structure
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 class Gauges:
  
@@ -10,10 +15,10 @@ class Gauges:
         self.stepper.calibrate_all()
 
         self.gauge_config = [
-                {"name": "Gauge1", "min_val": -100.0, "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
+                {"name": "Gauge3", "min_val": -100.0, "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
                 {"name": "Gauge2", "min_val": 0.0,    "max_val": 1.0,    "scale": 1.0, "pos": 0.0},
-                {"name": "Gauge3", "min_val": 0,      "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
-                {"name": "Gauge4", "min_val": -2000.0,"max_val": 1000.0, "scale": 1.0, "pos": 0.0}
+                {"name": "Gauge1", "min_val": 0,      "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
+                {"name": "Gauge0", "min_val": -2000.0,"max_val": 1000.0, "scale": 1.0, "pos": 0.0}
         ]
         self.gauge_map = {gauge["name"]: gauge for gauge in self.gauge_config}
         # Calculate scale factors
@@ -28,7 +33,6 @@ class Gauges:
 
     def cleanup(self):
         self.stepper.cleanup()
-
    
     def move_gauge(self, gauge_index, value):
         """
@@ -46,17 +50,18 @@ class Gauges:
 
         # Update current position in steps
         gauge["pos"] = value
-        print(gauge_index, value, steps)
-        print(*[steps if i == gauge_index else 0 for i, gauge in enumerate(self.gauge_config)])
+        logging.debug(f"Gauge {gauge_index}: Value={value}, Steps={steps}")
+        logging.debug(f"Steps for all gauges: {[steps if i == gauge_index else 0 for i, gauge in enumerate(self.gauge_config)]}")
         # Move the stepper motor to the new position
         self.stepper.move(*[steps if i == gauge_index else 0 for i, gauge in enumerate(self.gauge_config)])
 
     def get_all_gauges_status(self):
         status_list = []
-        for gauge in self.gauge_config:
+        for i, gauge in enumerate(self.gauge_config):
             status_list.append({
                 "name":     gauge["name"],
-                "position": gauge["pos"]
+                "position": gauge["pos"],
+                "steps":    self.stepper.get_steps(i)  # Get steps using motor index
             })
         return status_list
     
