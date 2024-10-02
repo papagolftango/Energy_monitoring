@@ -28,7 +28,7 @@ class Gauges:
         # Calculate scale factors
         for gauge in self.gauge_config:
             gauge["scale_factor"] = self.MOTOR_MAX_STEPS / (gauge["max_val"] - gauge["min_val"])
-            gauge["pos:"] = gauge["min_val"]    
+            gauge["pos"] = gauge["min_val"]    
             print(f"Scale factor for {gauge['name']}: {gauge['scale_factor']}")
 
     def cleanup(self):
