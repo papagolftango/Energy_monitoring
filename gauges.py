@@ -69,19 +69,19 @@ class Gauges:
 if __name__ == "__main__":
     gauges = Gauges()
     try:
-    while True:
-        try:
-            input_str = input("Enter gauge ID and position separated by a comma (e.g., 0, 45.0): ")
-            gauge_id, pos = map(float, input_str.split(","))
-            gauge_id = int(gauge_id)  # Ensure gauge_id is an integer
-            gauges.move_gauge(gauge_id, pos)
-            print(f"Moved gauge {gauge_id} to position {pos}")
-            print("Current gauge statuses:")
-            for status in gauges.get_all_gauges_status():
-                print(status)
-        except KeyboardInterrupt:
-            break
-        except ValueError:
-            print("Invalid input. Please enter the gauge ID and position separated by a comma.")
+        while True:
+            try:
+                input_str = input("Enter gauge ID and position separated by a comma (e.g., 0, 45.0): ")
+                gauge_id, pos = map(float, input_str.split(","))
+                gauge_id = int(gauge_id)  # Ensure gauge_id is an integer
+                gauges.move_gauge(gauge_id, pos)
+                print(f"Moved gauge {gauge_id} to position {pos}")
+                print("Current gauge statuses:")
+                for status in gauges.get_all_gauges_status():
+                    print(status)
+            except KeyboardInterrupt:
+                break
+            except ValueError:
+                print("Invalid input. Please enter the gauge ID and position separated by a comma.")
     finally:
         gauges.cleanup()
