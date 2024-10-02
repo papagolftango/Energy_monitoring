@@ -42,14 +42,14 @@ class Gauges:
         gauge = self.gauge_config[gauge_index]
         scale_factor = gauge["scale_factor"]
         # Apply scaling to convert value to steps
-        steps = int(((value - gauge["pos"])- gauge["min_val"]) * scale_factor)
+        steps = int((value - gauge["pos"]) * scale_factor)
 
         # Update current position in steps
         gauge["pos"] = value
         print(gauge_index, value, steps)
-        print(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)])
+        print(*[steps if i == gauge_index else 0 for i, gauge in enumerate(self.gauge_config)])
         # Move the stepper motor to the new position
-        self.stepper.move(*[steps if i == gauge_index else gauge["pos"] for i, gauge in enumerate(self.gauge_config)])
+        self.stepper.move(*[steps if i == gauge_index else 0 for i, gauge in enumerate(self.gauge_config)])
 
     def get_all_gauges_status(self):
         status_list = []
@@ -64,15 +64,19 @@ class Gauges:
 if __name__ == "__main__":
     gauges = Gauges()
     try:
-        while True:
-            gauge_id = int(input("Enter gauge ID (0-3): "))
-            pos = float(input("Enter position: "))
+    while True:
+        try:
+            input_str = input("Enter gauge ID and position separated by a comma (e.g., 0, 45.0): ")
+            gauge_id, pos = map(float, input_str.split(","))
+            gauge_id = int(gauge_id)  # Ensure gauge_id is an integer
             gauges.move_gauge(gauge_id, pos)
             print(f"Moved gauge {gauge_id} to position {pos}")
             print("Current gauge statuses:")
             for status in gauges.get_all_gauges_status():
                 print(status)
-    except KeyboardInterrupt:
-        print("Exiting...")
+        except KeyboardInterrupt:
+            break
+        except ValueError:
+            print("Invalid input. Please enter the gauge ID and position separated by a comma.")
     finally:
         gauges.cleanup()
