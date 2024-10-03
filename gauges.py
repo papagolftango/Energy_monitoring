@@ -20,7 +20,6 @@ class Gauges:
                 {"name": "Gauge1", "min_val": 0,      "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
                 {"name": "Gauge0", "min_val": -2000.0,"max_val": 1000.0, "scale": 1.0, "pos": 0.0}
         ]
-        self.gauge_map = {gauge["name"]: gauge for gauge in self.gauge_config}
         # Calculate scale factors
         self.calcScaleFactors()
 
@@ -29,7 +28,7 @@ class Gauges:
         for gauge in self.gauge_config:
             gauge["scale_factor"] = self.MOTOR_MAX_STEPS / (gauge["max_val"] - gauge["min_val"])
             gauge["pos"] = gauge["min_val"]    
-            print(f"Scale factor for {gauge['name']}: {gauge['scale_factor']}")
+            logging.debug(f"Scale factor for {gauge['name']}: {gauge['scale_factor']}")
 
     def cleanup(self):
         self.stepper.cleanup()
@@ -45,6 +44,9 @@ class Gauges:
 
         gauge = self.gauge_config[gauge_index]
         scale_factor = gauge["scale_factor"]
+
+        # Saturate the value between min_val and max_val
+        value = max(gauge["min_val"], min(value, gauge["max_val"]))
 
         # Apply scaling to convert value to steps
         steps = int((value - gauge["pos"]) * scale_factor)
@@ -70,19 +72,24 @@ class Gauges:
 if __name__ == "__main__":
     gauges = Gauges()
     try:
-        while True:
-            try:
-                input_str = input("Enter gauge ID and position separated by a comma (e.g., 0, 45.0): ")
-                gauge_id, pos = map(float, input_str.split(","))
-                gauge_id = int(gauge_id)  # Ensure gauge_id is an integer
+        for gauge_id in range(4):  # Iterate through gauge IDs 0 to 3
+            min_val = gauge_config[gauge_id]["min_val"]
+            max_val = gauge_config[gauge_id]["max_val"]
+            step_size = (max_val - min_val) / 10
+
+            for s in range(12):
+                pos = min_val + i * step_size
                 gauges.move_gauge(gauge_id, pos)
-                print(f"Moved gauge {gauge_id} to position {pos}")
-                print("Current gauge statuses:")
-                for status in gauges.get_all_gauges_status():
-                    print(status)
-            except KeyboardInterrupt:
-                break
-            except ValueError:
-                print("Invalid input. Please enter the gauge ID and position separated by a comma.")
+
+        for gauge_id in range(4):  # Iterate through gauge IDs 0 to 3
+            min_val = gauge_config[gauge_id]["min_val"]
+            max_val = gauge_config[gauge_id]["max_val"]
+            step_size = (min_val - max_val) / 10
+
+            for s in range(12):
+                pos = min_val + i * step_size
+                gauges.move_gauge(gauge_id, pos)
+                
+        print(gauges.get_all_gauges_status())
     finally:
         gauges.cleanup()
