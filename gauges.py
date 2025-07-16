@@ -15,10 +15,10 @@ class Gauges:
         self.stepper.calibrate_all()
 
         self.gauge_config = [
-                {"name": "Gauge3", "min_val": -100.0, "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
-                {"name": "Gauge2", "min_val": 0.0,    "max_val": 1.0,    "scale": 1.0, "pos": 0.0},
-                {"name": "Gauge1", "min_val": 0,      "max_val": 100.0,  "scale": 1.0, "pos": 0.0},
-                {"name": "Gauge0", "min_val": -2000.0,"max_val": 1000.0, "scale": 1.0, "pos": 0.0}
+                {"name": "Energy", "min_val": -6000.0, "max_val": 6000.0,  "scale": 1.0, "pos": 0.0},
+                {"name": "Solar", "min_val": 0.0,    "max_val": 3000,    "scale": 1.0, "pos": 0.0},
+                {"name": "mains", "min_val": 0.0,      "max_val": 300.0,  "scale": 1.0, "pos": 0.0},
+                {"name": "Use", "min_val": 0.0,"max_val": 10000.0, "scale": 1.0, "pos": 0.0}
         ]
         # Calculate scale factors
         self.calcScaleFactors()
