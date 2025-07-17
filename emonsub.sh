@@ -1,0 +1,1 @@
+mosquitto_sub -h 192.168.68.51 -p 1883 -u emonpi -P emonpimqtt2016 -t "emon/emontx3/+"

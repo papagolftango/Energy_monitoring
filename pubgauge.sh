@@ -1,0 +1,2 @@
+# Single command version
+mosquitto_pub -h 192.168.68.51 -p 1883 -u emonpi -P emonpimqtt2016 -t "emon/emontx3/balance" -m "1500.0" && mosquitto_pub -h 192.168.68.51 -p 1883 -u emonpi -P emonpimqtt2016 -t "emon/emontx3/solar" -m "2000.0" && mosquitto_pub -h 192.168.68.51 -p 1883 -u emonpi -P emonpimqtt2016 -t "emon/emontx3/vrms" -m "240.0" && mosquitto_pub -h 192.168.68.51 -p 1883 -u emonpi -P emonpimqtt2016 -t "emon/emontx3/used" -m "1800.0"
