@@ -1,21 +1,30 @@
 import paho.mqtt.client as mqtt
 from gauges import Gauges
 import logging
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 
-# === MQTT broker config ===
-EMONPI_HOST = "emonpi.local"       # or IP, e.g. "192.168.1.100"
-EMONPI_PORT = 1883
-MQTT_USERNAME = "your_username"    # replace with emonPi MQTT user (e.g. "emonpi")
-MQTT_PASSWORD = "your_password"    # replace with your MQTT password
+# === MQTT broker config from environment variables ===
+EMONPI_HOST = os.getenv("EMONPI_HOST", "emonpi.local")  # Default fallback
+EMONPI_PORT = int(os.getenv("EMONPI_PORT", "1883"))     # Default fallback
+MQTT_USERNAME = os.getenv("MQTT_USERNAME")              # Required
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")              # Required
+
+# Validate required environment variables
+if not MQTT_USERNAME or not MQTT_PASSWORD:
+    raise ValueError("MQTT_USERNAME and MQTT_PASSWORD environment variables must be set")
 
 # === Topic-to-gauge mapping ===
 TOPIC_TO_GAUGE = {
-    "emon/house/power": 0,
-    "emon/house/voltage": 1,
-    "emon/house/current": 2,
-    "emon/house/frequency": 3
+    "emon/emontx3/balance": 0,
+    "emon/emontx3/solar": 1,
+    "emon/emontx3/vrms": 2,
+    "emon/emontx3/used": 3
 }
 
 # === Setup gauges ===
@@ -41,22 +50,24 @@ def on_message(client, userdata, msg):
     except Exception as e:
         logging.error(f"Error processing message from {msg.topic}: {e}")
 
-# === MQTT Client Setup ===
-client = mqtt.Client()
+# === Main MQTT client setup ===
+def main():
+    client = mqtt.Client()
+    client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+    client.on_connect = on_connect
+    client.on_message = on_message
+    
+    try:
+        logging.info(f"Connecting to MQTT broker at {EMONPI_HOST}:{EMONPI_PORT}")
+        client.connect(EMONPI_HOST, EMONPI_PORT, 60)
+        client.loop_forever()
+    except KeyboardInterrupt:
+        logging.info("Interrupted by user")
+    except Exception as e:
+        logging.error(f"Connection error: {e}")
+    finally:
+        gauges.cleanup()
+        client.disconnect()
 
-# 🔐 Enable username/password authentication
-client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
-
-# Uncomment this line and comment out the one above to disable authentication:
-# client = mqtt.Client()  # No username/password
-
-client.on_connect = on_connect
-client.on_message = on_message
-
-try:
-    client.connect(EMONPI_HOST, EMONPI_PORT, 60)
-    client.loop_forever()
-except KeyboardInterrupt:
-    logging.info("Interrupted by user")
-finally:
-    gauges.cleanup()
+if __name__ == "__main__":
+    main()
