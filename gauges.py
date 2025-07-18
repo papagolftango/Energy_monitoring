@@ -19,7 +19,8 @@ class Gauges:
         
         # Calculate scale factors
         self.calcScaleFactors()
- def build_gauge_config(self):
+
+    def build_gauge_config(self):
         """Build gauge configuration from environment variables"""
         gauge_config = []
         
@@ -51,7 +52,7 @@ class Gauges:
                     logging.error(f"Error parsing {gauge_key}: {e}")
             else:
                 logging.warning(f"No configuration found for gauge {i}")
-                
+
         # Fallback to default configuration if no env vars found
         if not gauge_config:
             logging.warning("No gauge configuration found in environment variables, using defaults")
