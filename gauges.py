@@ -14,15 +14,56 @@ class Gauges:
         self.MOTOR_MAX_STEPS = self.stepper.get_max_steps()
         self.stepper.calibrate_all()
 
-        self.gauge_config = [
+        # Build gauge configuration from environment variables
+        self.gauge_config = self.build_gauge_config()
+        
+        # Calculate scale factors
+        self.calcScaleFactors()
+ def build_gauge_config(self):
+        """Build gauge configuration from environment variables"""
+        gauge_config = []
+        
+        # Look for GAUGE_0, GAUGE_1, GAUGE_2, GAUGE_3
+        for i in range(4):
+            gauge_key = f"GAUGE_{i}"
+            gauge_value = os.getenv(gauge_key)
+            
+            if gauge_value:
+                try:
+                    # Parse format: name,min_val,max_val
+                    parts = gauge_value.split(',')
+                    if len(parts) == 3:
+                        name = parts[0].strip()
+                        min_val = float(parts[1].strip())
+                        max_val = float(parts[2].strip())
+                        
+                        gauge_config.append({
+                            "name": name,
+                            "min_val": min_val,
+                            "max_val": max_val,
+                            "scale": 1.0,
+                            "pos": 0.0
+                        })
+                        logging.info(f"Loaded gauge {i}: {name} ({min_val} to {max_val})")
+                    else:
+                        logging.warning(f"Invalid format for {gauge_key}: {gauge_value}")
+                except ValueError as e:
+                    logging.error(f"Error parsing {gauge_key}: {e}")
+            else:
+                logging.warning(f"No configuration found for gauge {i}")
+                
+        # Fallback to default configuration if no env vars found
+        if not gauge_config:
+            logging.warning("No gauge configuration found in environment variables, using defaults")
+            gauge_config = [
                 {"name": "Energy", "min_val": -6000.0, "max_val": 6000.0,  "scale": 1.0, "pos": 0.0},
                 {"name": "Solar", "min_val": 0.0,    "max_val": 3000,    "scale": 1.0, "pos": 0.0},
                 {"name": "mains", "min_val": 0.0,      "max_val": 300.0,  "scale": 1.0, "pos": 0.0},
                 {"name": "Use", "min_val": 0.0,"max_val": 10000.0, "scale": 1.0, "pos": 0.0}
-        ]
-        # Calculate scale factors
-        self.calcScaleFactors()
-
+            ]
+        
+        return gauge_config
+   
     def calcScaleFactors(self):
         # Calculate scale factors
         for gauge in self.gauge_config:
