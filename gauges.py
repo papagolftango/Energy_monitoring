@@ -118,8 +118,8 @@ if __name__ == "__main__":
     gauges = Gauges()
     try:
         for gauge_id in range(4):  # Iterate through gauge IDs 0 to 3
-            min_val = gauge_config[gauge_id]["min_val"]
-            max_val = gauge_config[gauge_id]["max_val"]
+            min_val = gauges.gauge_config[gauge_id]["min_val"]
+            max_val = gauges.gauge_config[gauge_id]["max_val"]
             step_size = (max_val - min_val) / 10
 
             for s in range(12):
@@ -127,8 +127,8 @@ if __name__ == "__main__":
                 gauges.move_gauge(gauge_id, pos)
 
         for gauge_id in range(4):  # Iterate through gauge IDs 0 to 3
-            min_val = gauge_config[gauge_id]["min_val"]
-            max_val = gauge_config[gauge_id]["max_val"]
+            min_val = gauges.gauge_config[gauge_id]["min_val"]
+            max_val = gauges.gauge_config[gauge_id]["max_val"]
             step_size = (min_val - max_val) / 10
 
             for s in range(12):
