@@ -2,6 +2,9 @@ import time
 import pigpio
 from steppermotor import StepperMotor  # Ensure this import matches your file structure
 import logging
+import os
+from dotenv import load_dotenv  # Load environment variables from .env file
+
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
