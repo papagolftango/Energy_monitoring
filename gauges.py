@@ -123,7 +123,7 @@ if __name__ == "__main__":
             step_size = (max_val - min_val) / 10
 
             for s in range(12):
-                pos = min_val + i * step_size
+                pos = min_val + s * step_size
                 gauges.move_gauge(gauge_id, pos)
 
         for gauge_id in range(4):  # Iterate through gauge IDs 0 to 3
@@ -132,7 +132,7 @@ if __name__ == "__main__":
             step_size = (min_val - max_val) / 10
 
             for s in range(12):
-                pos = min_val + i * step_size
+                pos = min_val + s * step_size
                 gauges.move_gauge(gauge_id, pos)
                 
         print(gauges.get_all_gauges_status())
