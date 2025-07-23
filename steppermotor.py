@@ -1,3 +1,4 @@
+import logging
 import time
 import pigpio
 import subprocess
@@ -26,6 +27,12 @@ class StepperMotor:
             self.pi = pigpio.pi()
             if not self.pi.connected:
                 raise Exception("Could not connect to pigpio daemon")
+            
+        # LED configuration - GPIO 5, start OFF
+        self.LED_PIN = 5
+        self.pi.set_mode(self.LED_PIN, pigpio.OUTPUT)
+        self.pi.write(self.LED_PIN, 0)  # Start OFF
+        logging.info("LED initialized on GPIO 5 (OFF)")
 
         # Set up the GPIO pins for each motor
         for motor in self.MOTOR_CONFIGS:
@@ -159,6 +166,11 @@ class StepperMotor:
             print(f"Pigpio error during calibration of all motors: {e}")
         except Exception as e:
             print(f"Unexpected error during calibration of all motors: {e}")
+
+    def set_led(self, state):
+        """Set LED on (True) or off (False)"""
+        self.pi.write(self.LED_PIN, 1 if state else 0)
+        logging.info(f"LED set to {'ON' if state else 'OFF'}")
 
     def cleanup(self):
         self.pi.stop()

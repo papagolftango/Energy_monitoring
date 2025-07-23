@@ -22,6 +22,10 @@ class Gauges:
         
         # Calculate scale factors
         self.calcScaleFactors()
+    
+    def set_status(self, state):
+        """Set status LED on (True) or off (False)"""
+        self.stepper.set_led(state)
 
     def build_gauge_config(self):
         """Build gauge configuration from environment variables"""
