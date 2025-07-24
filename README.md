@@ -17,7 +17,8 @@ This board is a 'hat' for a RPI zero W. This uses some simple python code to dri
 It in turn uses the PIGPIO library to provide a more real-time step experience. 
 This library is not rerentrant and I wanted to be able to move the 4 motors simultaneously, if required. 
 
-The Stepper driver requies a reset  - provided by a GPIO at initalisation. Then, for each motor its a case of 
+The stepper driver is abstracted by stepper.py which manages the 4 separate steppers.
+The Stepper driver requiers a reset  - provided by a GPIO at initalisation. Then, for each motor its a case of 
 setting the direction pin and then providing the appropriate number of steps. The motors require 12 step per degree and travel over 300 degs.
 
 Th main code is based on Gauges.py. This manages all 4 gauges and is currently configured by a hardcoded table which sets the direction and step pins.
